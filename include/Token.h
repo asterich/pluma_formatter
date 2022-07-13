@@ -21,6 +21,15 @@ enum TokenType {
     // Character constant.
     CHAR_CONST,
 
+    // Preprocessing.
+    SHARP,    // "#"
+    INCLUDE,  // "include"
+    DEFINE,   // "define"
+
+    // Comments.
+    BLOCK_COMMENT,  // "//"
+    LINE_COMMENT,   // "/* */"
+
     // Arithmetic operators.
     ADD,  // "+"
     SUB,  // "-"
@@ -81,6 +90,41 @@ enum TokenType {
     DBL_COLON,      // "::"
     SEMICOLON,      // ";"
     QUESTION_MARK,  // "?"
+
+    // Keywords.
+    CHAR,
+    SHORT,
+    INT,
+    LONG,
+    UNSIGNED,
+    FLOAT,
+    DOUBLE,
+    VOID,
+
+    STRUCT,
+    ENUM,
+    UNION,
+    TYPEDEF,
+
+    CONST,
+    STATIC,
+    VOLATILE,
+    EXTERN,
+
+    SIZEOF,
+
+    IF,
+    ELSE,
+    WHILE,
+    DO,
+    FOR,
+    SWITCH,
+    CASE,
+    DEFAULT,
+    CONTINUE,
+    BREAK,
+    RETURN,
+    GOTO,
 };
 
 class Token {
