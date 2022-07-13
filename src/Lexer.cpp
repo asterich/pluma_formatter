@@ -86,7 +86,61 @@ Token Lexer::scan(std::fstream &file) {
                     break;
                 }
                 case '/': {
-                    // TODO: 除了算术运算之外，还有注释需要处理
+                    value.push_back(peek);
+
+                    // "/="
+                    peek = expectChar(file, '=');
+                    if (peek && peek != -1) {
+                        value.push_back(peek);
+                        peek = file.get();
+                        return Token(value, TokenType::DIV_ASSIGN);
+                    }
+
+                    // "//"
+                    peek = expectChar(file, '/');
+                    if (peek && peek != -1) {
+                        value.push_back(peek);
+                        while ((peek = file.get()) != '\n') {
+                            value.push_back(peek);
+                        }
+                        peek = file.get();
+                        return Token(value, TokenType::LINE_COMMENT);
+                    }
+
+                    // "/* */"
+                    peek = expectChar(file, '*');
+                    if (peek && peek != -1) {
+                        value.push_back(peek);
+                        for (peek = file.get(); peek != -1 && peek != '*';
+                             peek = file.get()) {
+                            value.push_back(peek);
+                        }
+                        switch (peek) {
+                            case -1: {
+                                panic("Block comment doesn't close.\n");
+                                return Token();
+                                break;
+                            }
+                            case '*': {
+                                value.push_back(peek);
+                                peek = expectChar(file, '/');
+                                if (peek && peek != -1) {
+                                    value.push_back(peek);
+                                    peek = file.get();
+                                    return Token(value,
+                                                 TokenType::BLOCK_COMMENT);
+                                } else {
+                                    panic("Block comment doesn't close.\n");
+                                    return Token();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // "/"
+                    peek = file.get();
+                    return Token(value, TokenType::DIV);
                     break;
                 }
                 case '%': {
