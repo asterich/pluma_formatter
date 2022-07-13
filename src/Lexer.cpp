@@ -342,6 +342,12 @@ Token Lexer::scan(std::fstream &file) {
                     return Token(value, TokenType::QUESTION_MARK);
                 }
 
+                case '#': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::SHARP);
+                }
+
                 default:
                     break;
             }
