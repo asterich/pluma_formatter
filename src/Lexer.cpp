@@ -27,13 +27,13 @@ Token Lexer::scan(std::fstream &file) {
         // Skip blank character.
         for (; isblank(peek) || peek == '\n'; peek = file.get()) {
         }
-        if (file.eof() || peek == -1) {
+        if (file.eof()) {
             return Token();
         }
 
         // TODO: Handle operators.
-        // FIXME: Single-character operators at the end of file causes infinite
-        // loops.
+        // FIXME: Redundant token with incorrect token type at tail while there
+        // are blanks at the end of the file.
         {
             std::string value = "";
             switch (peek) {
@@ -207,6 +207,87 @@ Token Lexer::scan(std::fstream &file) {
                     return Token(value, TokenType::ASSIGN);
                     break;
                 }
+                case '~': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::BITNOT);
+                }
+                case '!': {
+                    value.push_back(peek);
+                    peek = expectChar(file, '=');
+                    if (peek && peek != -1) {
+                        value.push_back(peek);
+                        peek = file.get();
+                        return Token(value, TokenType::NEQ);
+                    }
+                    peek = file.get();
+                    return Token(value, TokenType::NOT);
+                }
+
+                // Brackets.
+                case '(': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::LPAREN);
+                }
+                case ')': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::RPAREN);
+                }
+                case '[': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::LSBRACKET);
+                }
+                case ']': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::RSBRACKET);
+                }
+                case '{': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::LBRACE);
+                }
+                case '}': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::RBRACE);
+                }
+
+                case ',': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::COMMA);
+                }
+                case '.': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::PERIOD);
+                }
+                case ':': {
+                    value.push_back(peek);
+                    peek = expectChar(file, ':');
+                    if (peek && peek != -1) {
+                        value.push_back(peek);
+                        peek = file.get();
+                        return Token(value, TokenType::DBL_COLON);
+                    }
+                    peek = file.get();
+                    return Token(value, TokenType::COLON);
+                }
+                case ';': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::SEMICOLON);
+                }
+                case '?': {
+                    value.push_back(peek);
+                    peek = file.get();
+                    return Token(value, TokenType::QUESTION_MARK);
+                }
+
                 default:
                     break;
             }
@@ -222,6 +303,50 @@ Token Lexer::scan(std::fstream &file) {
             } while (isalpha(peek) || isdigit(peek) || peek == '_');
 
             return Token(value, TokenType::IDENTIFIER);
+        }
+
+        // Handle C-style string constant.
+        if (peek == '\"') {
+            std::string value = "";
+            value.push_back(peek);
+            while ((peek = file.get()) != '\"') {
+                if (file.eof() || peek == '\n') {
+                    panic("Open string constant!");
+                    return Token();
+                }
+                value.push_back(peek);
+            }
+            value.push_back(peek);
+            peek = file.get();
+            return Token(value, TokenType::STRING_CONST);
+        }
+
+        // Handle character constant.
+        if (peek == '\'') {
+            std::string value = "";
+
+            value.push_back(peek);
+
+            peek = expectChar(file, '\\');
+            if (peek && peek != -1) {
+                value.push_back(peek);
+            }
+            peek = file.get();
+            if (!isascii(peek)) {
+                panic("Character constant includes non-ascii character!\n");
+                return Token();
+            }
+            value.push_back(peek);
+            peek = expectChar(file, '\'');
+            if (!peek) {
+                panic(
+                    "Quotation mark doesn't close, or there are more than "
+                    "1 character in the char constant.\n");
+                return Token();
+            }
+            value.push_back(peek);
+            peek = file.get();
+            return Token(value, TokenType::CHAR_CONST);
         }
 
         // Handle numbers.
