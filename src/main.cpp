@@ -11,7 +11,7 @@ void panic(const char *info) {
 }
 
 int main() {
-    file.open("./test.txt");
+    file.open("../../test.txt");
     if (!file.is_open()) {
         panic("Failed to open file!\n");
     }
