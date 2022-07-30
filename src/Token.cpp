@@ -1,13 +1,13 @@
 #include "Token.h"
 
-Token::Token() {}
+Token::Token() : value(std::string("")), tokenType(TokenType::UNKNOWN) {}
 
 Token::Token(std::string _value, TokenType _type)
     : value(_value), tokenType(_type) {}
 
 Token::Token(const Token &other) {
-    this->value = other.value;
-    this->tokenType = other.tokenType;
+  this->value = other.value;
+  this->tokenType = other.tokenType;
 }
 
 Token::Token(Token &&other)

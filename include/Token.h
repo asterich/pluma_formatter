@@ -6,137 +6,138 @@
 
 // The type of a token.
 enum TokenType {
-    // Unknown token.
-    UNKNOWN,
+  // Unknown token.
+  UNKNOWN,
 
-    // Number.
-    NUMBER,
+  // Number.
+  NUMBER,
 
-    // Identifier.
-    IDENTIFIER,
+  // Identifier.
+  IDENTIFIER,
 
-    // C-style string constant.
-    STRING_CONST,
+  // C-style string constant.
+  STRING_CONST,
 
-    // Character constant.
-    CHAR_CONST,
+  // Character constant.
+  CHAR_CONST,
 
-    // Preprocessing.
-    SHARP,    // "#"
-    INCLUDE,  // "include"
-    DEFINE,   // "define"
+  // Preprocessing.
+  SHARP,   // "#"
+  INCLUDE, // "include"
+  DEFINE,  // "define"
 
-    // Comments.
-    BLOCK_COMMENT,  // "//"
-    LINE_COMMENT,   // "/* */"
+  // Comments.
+  BLOCK_COMMENT, // "//"
+  LINE_COMMENT,  // "/* */"
 
-    // Arithmetic operators.
-    ADD,  // "+"
-    SUB,  // "-"
-    MUL,  // "*"
-    DIV,  // "/"
-    MOD,  // "%"
+  // Arithmetic operators.
+  ADD, // "+"
+  SUB, // "-"
+  MUL, // "*"
+  DIV, // "/"
+  MOD, // "%"
 
-    // Bitwise operators.
-    BITAND,  // "&"
-    BITOR,   // "|"
-    BITXOR,  // "^"
-    BITNOT,  // "~"
-    LSHIFT,  // "<<"
-    RSHIFT,  // ">>"
+  // Bitwise operators.
+  BITAND, // "&"
+  BITOR,  // "|"
+  BITXOR, // "^"
+  BITNOT, // "~"
+  LSHIFT, // "<<"
+  RSHIFT, // ">>"
 
-    // Logical operators.
-    AND,  // "&&"
-    OR,   // "||"
-    NOT,  // "!"
+  // Logical operators.
+  AND, // "&&"
+  OR,  // "||"
+  NOT, // "!"
 
-    // Comparison operators.
-    EQ,   // "=="
-    NEQ,  // "!="
-    LE,   // "<="
-    GE,   // ">="
-    LT,   // "<"
-    GT,   // ">"
+  // Comparison operators.
+  EQ,  // "=="
+  NEQ, // "!="
+  LE,  // "<="
+  GE,  // ">="
+  LT,  // "<"
+  GT,  // ">"
 
-    // Assignment operators.
-    ASSIGN,         // "="
-    ADD_ASSIGN,     // "+="
-    SUB_ASSIGN,     // "-="
-    MUL_ASSIGN,     // "*="
-    DIV_ASSIGN,     // "/="
-    MOD_ASSIGN,     // "%="
-    BITAND_ASSIGN,  // "&="
-    BITOR_ASSIGN,   // "|="
-    BITXOR_ASSIGN,  // "^="
-    LSHIFT_ASSIGN,  // "<<="
-    RSHIFT_ASSIGN,  // ">>="
+  // Assignment operators.
+  ASSIGN,        // "="
+  ADD_ASSIGN,    // "+="
+  SUB_ASSIGN,    // "-="
+  MUL_ASSIGN,    // "*="
+  DIV_ASSIGN,    // "/="
+  MOD_ASSIGN,    // "%="
+  BITAND_ASSIGN, // "&="
+  BITOR_ASSIGN,  // "|="
+  BITXOR_ASSIGN, // "^="
+  LSHIFT_ASSIGN, // "<<="
+  RSHIFT_ASSIGN, // ">>="
 
-    // Increment/Decrement operators.
-    INCR,  // "++"
-    DECR,  // "--"
+  // Increment/Decrement operators.
+  INCR, // "++"
+  DECR, // "--"
 
-    // Brackets.
-    LPAREN,     // "("
-    RPAREN,     // ")"
-    LSBRACKET,  // "["
-    RSBRACKET,  // "]"
-    LBRACE,     // "{"
-    RBRACE,     // "}"
+  // Brackets.
+  LPAREN,    // "("
+  RPAREN,    // ")"
+  LSBRACKET, // "["
+  RSBRACKET, // "]"
+  LBRACE,    // "{"
+  RBRACE,    // "}"
 
-    // Other operators.
-    COMMA,          // ","
-    PERIOD,         // "."
-    COLON,          // ":"
-    DBL_COLON,      // "::"
-    SEMICOLON,      // ";"
-    QUESTION_MARK,  // "?"
+  // Other operators.
+  COMMA,         // ","
+  PERIOD,        // "."
+  COLON,         // ":"
+  DBL_COLON,     // "::"
+  SEMICOLON,     // ";"
+  QUESTION_MARK, // "?"
 
-    // Keywords.
-    CHAR,
-    SHORT,
-    INT,
-    LONG,
-    UNSIGNED,
-    FLOAT,
-    DOUBLE,
-    VOID,
+  // Keywords.
+  CHAR,
+  SHORT,
+  INT,
+  LONG,
+  UNSIGNED,
+  FLOAT,
+  DOUBLE,
+  VOID,
 
-    STRUCT,
-    ENUM,
-    UNION,
-    TYPEDEF,
+  STRUCT,
+  ENUM,
+  UNION,
+  TYPEDEF,
 
-    CONST,
-    STATIC,
-    VOLATILE,
-    EXTERN,
+  CONST,
+  STATIC,
+  VOLATILE,
+  EXTERN,
 
-    SIZEOF,
+  SIZEOF,
 
-    IF,
-    ELSE,
-    WHILE,
-    DO,
-    FOR,
-    SWITCH,
-    CASE,
-    DEFAULT,
-    CONTINUE,
-    BREAK,
-    RETURN,
-    GOTO,
+  IF,
+  ELSE,
+  WHILE,
+  DO,
+  FOR,
+  SWITCH,
+  CASE,
+  DEFAULT,
+  CONTINUE,
+  BREAK,
+  RETURN,
+  GOTO,
 };
 
 class Token {
-   public:
-    std::string value;
-    TokenType tokenType;
+public:
+  std::string value;
+  TokenType tokenType;
 
-   public:
-    Token();
-    Token(std::string _value, TokenType _type);
-    Token(const Token &other);
-    Token(Token &&other);
+public:
+  Token();
+  Token(std::string _value, TokenType _type);
+  Token(const Token &other);
+  Token(Token &&other);
+  ~Token() = default;
 };
 
 #endif
