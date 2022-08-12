@@ -31,9 +31,6 @@ Token Lexer::scan(std::fstream &file) {
             return Token();
         }
 
-        // TODO: Handle operators.
-        // FIXME: Redundant token with incorrect token type at tail while there
-        // are blanks at the end of the file.
         {
             std::string value = "";
             switch (peek) {
@@ -353,7 +350,7 @@ Token Lexer::scan(std::fstream &file) {
             }
         }
 
-        // Handle identifiers.
+        // Handle keywords and identifiers.
         if (isalpha(peek) || peek == '_') {
             std::string value = "";
 
@@ -361,6 +358,14 @@ Token Lexer::scan(std::fstream &file) {
                 value.push_back(peek);
                 peek = file.get();
             } while (isalpha(peek) || isdigit(peek) || peek == '_');
+
+            if (auto token_pair = keywordMap.find(value);
+                token_pair != keywordMap.end()) {
+                return Token(token_pair->first, token_pair->second);
+            } else if (auto token_pair = preprocessorMap.find(value);
+                       token_pair != preprocessorMap.end()) {
+                return Token(token_pair->first, token_pair->second);
+            }
 
             return Token(value, TokenType::IDENTIFIER);
         }
