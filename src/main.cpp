@@ -4,7 +4,7 @@ std::fstream file;
 std::fstream outfile;
 
 void panic(const char *info) {
-    std::cerr << "Error: " << info << std::endl;
+    std::cerr << "\nError: " << info << std::endl;
     file.close();
     outfile.close();
     std::abort();

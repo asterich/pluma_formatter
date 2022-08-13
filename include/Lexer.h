@@ -12,6 +12,7 @@
 class Lexer {
    private:
     char peek = ' ';
+    int line = 1;
 
    public:
     Token scan(std::fstream &file);

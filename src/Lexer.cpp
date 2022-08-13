@@ -26,6 +26,9 @@ Token Lexer::scan(std::fstream &file) {
     while (!file.eof()) {
         // Skip blank character.
         for (; isblank(peek) || peek == '\n'; peek = file.get()) {
+            if (peek == '\n') {
+                ++line;
+            }
         }
         if (file.eof()) {
             return Token();
@@ -111,10 +114,18 @@ Token Lexer::scan(std::fstream &file) {
                         for (peek = file.get(); peek != -1 && peek != '*';
                              peek = file.get()) {
                             value.push_back(peek);
+                            if (peek == '\n') {
+                                ++line;
+                            }
                         }
                         switch (peek) {
                             case -1: {
-                                panic("Block comment doesn't close.\n");
+                                char errmsg[63];
+                                sprintf(errmsg,
+                                        "At line %d:\n"
+                                        "Block comment doesn't close.\n",
+                                        line);
+                                panic(errmsg);
                                 return Token();
                                 break;
                             }
@@ -127,7 +138,12 @@ Token Lexer::scan(std::fstream &file) {
                                     return Token(value,
                                                  TokenType::BLOCK_COMMENT);
                                 } else {
-                                    panic("Block comment doesn't close.\n");
+                                    char errmsg[63];
+                                    sprintf(errmsg,
+                                            "At line %d:\n"
+                                            "Block comment doesn't close.\n",
+                                            line);
+                                    panic(errmsg);
                                     return Token();
                                     break;
                                 }
@@ -315,7 +331,17 @@ Token Lexer::scan(std::fstream &file) {
                 case '.': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::PERIOD);
+                    // Check if the successor is a digit.
+                    if (!isdigit(peek)) {
+                        return Token(value, TokenType::PERIOD);
+                    } else {
+                        // If the successor is a digit, recover from the status
+                        // before and break.
+                        value.pop_back();
+                        file.unget();
+                        peek = '.';
+                        break;
+                    }
                 }
                 case ':': {
                     value.push_back(peek);
@@ -376,7 +402,12 @@ Token Lexer::scan(std::fstream &file) {
             value.push_back(peek);
             while ((peek = file.get()) != '\"') {
                 if (file.eof() || peek == '\n') {
-                    panic("Open string constant!");
+                    char errmsg[63];
+                    sprintf(errmsg,
+                            "At line %d:\n"
+                            "String constant doesn't close.\n",
+                            line);
+                    panic(errmsg);
                     return Token();
                 }
                 value.push_back(peek);
@@ -398,15 +429,24 @@ Token Lexer::scan(std::fstream &file) {
             }
             peek = file.get();
             if (!isascii(peek)) {
-                panic("Character constant includes non-ascii character!\n");
+                char errmsg[63];
+                sprintf(errmsg,
+                        "At line %d:\n"
+                        "Character constant includes non-ascii character!\n",
+                        line);
+                panic(errmsg);
                 return Token();
             }
             value.push_back(peek);
             peek = expectChar(file, '\'');
             if (!peek) {
-                panic(
-                    "Quotation mark doesn't close, or there are more than "
-                    "1 character in the char constant.\n");
+                char errmsg[63];
+                sprintf(errmsg,
+                        "At line %d:\n"
+                        "Quotation mark doesn't close, or there are more than "
+                        "1 character in the char constant.\n",
+                        line);
+                panic(errmsg);
                 return Token();
             }
             value.push_back(peek);
@@ -426,26 +466,44 @@ Token Lexer::scan(std::fstream &file) {
                 if (isdigit(peek)) {
                 } else if (peek == '.') {
                     if (isFloat) {
-                        panic("Character \'.\' appears twice in a float.\n");
+                        char errmsg[63];
+                        sprintf(errmsg,
+                                "At line %d:\n"
+                                "Character \'.\' appears twice in a float.\n",
+                                line);
+                        panic(errmsg);
                     }
                     isFloat = true;
                 } else if (peek == 'x' || peek == 'X') {
                     if (value.length() != 1 || value[0] != '0') {
-                        panic("Wrong character appeared in a number\n");
+                        char errmsg[63];
+                        sprintf(errmsg,
+                                "At line %d:\n"
+                                "Wrong character appeared in a number\n",
+                                line);
+                        panic(errmsg);
                     }
                     isHex = true;
                 } else if (isalpha(peek)) {
                     if (!isHex && !((peek >= 'a' && peek <= 'f') ||
                                     (peek >= 'A' && peek <= 'F'))) {
-                        panic("Wrong character appeared in a number\n");
+                        char errmsg[63];
+                        sprintf(errmsg,
+                                "At line %d:\n"
+                                "Wrong character appeared in a number\n",
+                                line);
+                        panic(errmsg);
                     }
                 } else {
                     break;
                 }
                 value.push_back(peek);
             }
-
-            return Token(value, TokenType::NUMBER);
+            if (isFloat) {
+                return Token(value, TokenType::FLOAT_CONST);
+            } else {
+                return Token(value, TokenType::INT_CONST);
+            }
         }
     }
     return Token();

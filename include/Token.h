@@ -10,8 +10,9 @@ enum TokenType {
     // Unknown token.
     UNKNOWN,
 
-    // Number.
-    NUMBER,
+    // Number constant.
+    INT_CONST,
+    FLOAT_CONST,
 
     // Identifier.
     IDENTIFIER,
@@ -93,6 +94,8 @@ enum TokenType {
     QUESTION_MARK,  // "?"
 
     // Keywords.
+
+    // Type specifier.
     CHAR,
     SHORT,
     INT,
@@ -105,12 +108,15 @@ enum TokenType {
     STRUCT,
     ENUM,
     UNION,
-    TYPEDEF,
 
+    // Type qualifier.
     CONST,
-    STATIC,
     VOLATILE,
+
+    // Storage-class specifier.
+    STATIC,
     EXTERN,
+    TYPEDEF,
 
     SIZEOF,
 
