@@ -1317,6 +1317,10 @@ pluma::Parser::Parser() {
             SymList{
                 Nonterminal{"unary-expr"},
             },
+        Nonterminal{"expr"} >> SymList{Nonterminal{"expr"},
+                                       Terminal{Token{"?", TokenType::QUESTION_MARK}},
+                                       Nonterminal{"expr"}, Terminal{Token{":", TokenType::COLON}},
+                                       Nonterminal{"expr"}},
 
         /**
          * unary-expr -> postfix-expr
