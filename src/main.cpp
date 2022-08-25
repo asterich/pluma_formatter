@@ -1,4 +1,7 @@
-#include "main.h"
+#include "Ast.hpp"
+#include "Lexer.h"
+#include "Parser.h"
+// #include "main.h"
 
 std::fstream file;
 std::fstream outfile;
@@ -11,17 +14,27 @@ void panic(const char *info) {
 }
 
 int main() {
-    file.open("../../test.txt");
+    file.open("/Users/asterich/Desktop/MyPrograms/C++/compiler_learning/pluma_formatter/test.txt");
     if (!file.is_open()) {
         panic("Failed to open file!\n");
     }
 
-    Lexer lexer;
+    pluma::Lexer lexer;
+    std::vector<pluma::Sym> symVec;
     while (!file.eof()) {
-        Token token = lexer.scan(file);
-        if (token.tokenType != TokenType::UNKNOWN)
-            std::cout << "Token: { " << token.value << " " << token.tokenType
-                      << " }\n";
+        pluma::Token token = lexer.scan(file);
+        if (token.tokenType != pluma::TokenType::UNKNOWN) {
+            symVec.push_back(pluma::Terminal{token});
+        }
+    }
+    file.close();
+    symVec.push_back(pluma::Terminal{pluma::Token{"EOF", pluma::TokenType::TK_EOF}});
+
+    pluma::Parser parser;
+    parser.grammarPtr->displayAllRule();
+    if (!parser.grammarPtr->checkLR1()) {
+        pluma::Ast ast = parser.grammarPtr->gen(symVec);
+        ast.display();
     }
 
     return 0;

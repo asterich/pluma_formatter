@@ -1,14 +1,27 @@
-#ifndef TOKEN_H_
-#define TOKEN_H_
+#ifndef SYMBOL_HPP_
+#define SYMBOL_HPP_
 
+#include <iostream>
 #include <map>
 #include <string>
+#include <variant>
 #include <vector>
+
+namespace pluma {
 
 // The type of a token.
 enum TokenType {
+    // EOF token.
+    TK_EOF = -1,
+
+    // Nil token.
+    NIL,
+
     // Unknown token.
     UNKNOWN,
+
+    // Error.
+    ERROR,
 
     // Number constant.
     INT_CONST,
@@ -88,6 +101,7 @@ enum TokenType {
     // Other operators.
     COMMA,          // ","
     PERIOD,         // "."
+    ARROW,          // "->"
     COLON,          // ":"
     DBL_COLON,      // "::"
     SEMICOLON,      // ";"
@@ -101,6 +115,7 @@ enum TokenType {
     INT,
     LONG,
     UNSIGNED,
+    SIGNED,
     FLOAT,
     DOUBLE,
     VOID,
@@ -145,6 +160,7 @@ const std::map<std::string, TokenType> keywordMap{
     {"short", TokenType::SHORT},
     {"long", TokenType::LONG},
     {"unsigned", TokenType::UNSIGNED},
+    {"signed", TokenType::SIGNED},
     {"float", TokenType::FLOAT},
     {"double", TokenType::INT},
     {"void", TokenType::VOID},
@@ -190,17 +206,99 @@ const std::map<std::string, TokenType> preprocessorMap{
     {"define", TokenType::DEFINE},
 };
 
-class Token {
-   public:
+struct Token {
     std::string value;
     TokenType tokenType;
 
-   public:
+    size_t line;
+
     Token();
-    Token(std::string _value, TokenType _type);
+    Token(std::string _value, TokenType _type, size_t _line = 0);
     Token(const Token &other);
     Token(Token &&other);
     ~Token() = default;
+
+    // copy operator required by std::variant
+    Token &operator=(const Token &other) {
+        if (this == &other) {
+            return *this;
+        }
+        this->value = other.value;
+        this->tokenType = other.tokenType;
+        return *this;
+    }
 };
+
+// 终结符 / 非终结符
+struct Terminal {
+    Token token;
+
+    Terminal(const Token &token) : token(token) {}
+
+    // Only for std::map and std::set.
+    bool operator<(const Terminal &rhs) const {
+        // if (this->token.tokenType == rhs.token.tokenType) {
+        //     return this->token.value < rhs.token.value;
+        // }
+        return this->token.tokenType < rhs.token.tokenType;
+    }
+
+    bool operator==(const Terminal &rhs) const {
+        return this->token.tokenType == rhs.token.tokenType;
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const Terminal &terminal) {
+        os << terminal.token.value;
+        return os;
+    }
+};
+
+struct Nonterminal {
+    std::string token;
+
+    Nonterminal() : token("") {}
+
+    Nonterminal(const std::string &token) : token(token) {}
+
+    bool operator<(const Nonterminal &rhs) const { return this->token < rhs.token; }
+
+    bool operator==(const Nonterminal &rhs) const { return this->token == rhs.token; }
+
+    friend std::ostream &operator<<(std::ostream &os, const Nonterminal &nonterminal) {
+        os << nonterminal.token;
+        return os;
+    }
+};
+
+// 符号
+using Sym = std::variant<Terminal, Nonterminal>;
+
+std::ostream &operator<<(std::ostream &os, const Sym &sym);
+
+// 产生式
+using SymList = std::vector<Sym>;
+using Rule = std::pair<Nonterminal, SymList>;
+
+Rule operator>>(Nonterminal sym, const SymList &symlist);
+
+std::ostream &operator<<(std::ostream &os, const Rule &rule);
+
+struct SymLess {
+    constexpr bool operator()(const Sym &lhs, const Sym &rhs) const {
+        if (std::holds_alternative<Terminal>(lhs) && std::holds_alternative<Terminal>(rhs)) {
+            // both Terminal
+            return std::get<Terminal>(lhs) < std::get<Terminal>(rhs);
+        } else if (std::holds_alternative<Nonterminal>(lhs) &&
+                   std::holds_alternative<Nonterminal>(rhs)) {
+            // both Nonterminal
+            return std::get<Nonterminal>(lhs) < std::get<Nonterminal>(rhs);
+        } else {
+            // Terminal < Nonterminal
+            return std::holds_alternative<Terminal>(lhs);
+        }
+    }
+};
+
+}  // namespace pluma
 
 #endif

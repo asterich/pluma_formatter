@@ -4,9 +4,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "Lexer.h"
-#include "Token.h"
-
 void panic(const char *info);
 
 #endif

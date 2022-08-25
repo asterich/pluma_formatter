@@ -6,8 +6,10 @@
 #include <iostream>
 #include <string>
 
-#include "Token.h"
+#include "Symbol.hpp"
 #include "main.h"
+
+namespace pluma {
 
 class Lexer {
    private:
@@ -17,5 +19,7 @@ class Lexer {
    public:
     Token scan(std::fstream &file);
 };
+
+}  // namespace pluma
 
 #endif

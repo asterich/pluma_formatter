@@ -1,5 +1,7 @@
 #include "Lexer.h"
 
+namespace pluma {
+
 // Get a char; if the next character is the expected one, return it;
 // else unget and return 0.
 char expectChar(std::fstream &file, char expectedChar) {
@@ -43,16 +45,16 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::INCR);
+                        return Token(value, TokenType::INCR, line);
                     }
                     peek = expectChar(file, '=');
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::ADD_ASSIGN);
+                        return Token(value, TokenType::ADD_ASSIGN, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::ADD);
+                    return Token(value, TokenType::ADD, line);
                     break;
                 }
                 case '-': {
@@ -61,16 +63,22 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::DECR);
+                        return Token(value, TokenType::DECR, line);
+                    }
+                    peek = expectChar(file, '>');
+                    if (peek && peek != -1) {
+                        value.push_back(peek);
+                        peek = file.get();
+                        return Token(value, TokenType::ARROW, line);
                     }
                     peek = expectChar(file, '=');
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::SUB_ASSIGN);
+                        return Token(value, TokenType::SUB_ASSIGN, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::SUB);
+                    return Token(value, TokenType::SUB, line);
                     break;
                 }
                 case '*': {
@@ -79,10 +87,10 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::MUL_ASSIGN);
+                        return Token(value, TokenType::MUL_ASSIGN, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::MUL);
+                    return Token(value, TokenType::MUL, line);
                     break;
                 }
                 case '/': {
@@ -93,7 +101,7 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::DIV_ASSIGN);
+                        return Token(value, TokenType::DIV_ASSIGN, line);
                     }
 
                     // "//"
@@ -104,15 +112,14 @@ Token Lexer::scan(std::fstream &file) {
                             value.push_back(peek);
                         }
                         peek = file.get();
-                        return Token(value, TokenType::LINE_COMMENT);
+                        return Token(value, TokenType::LINE_COMMENT, line);
                     }
 
                     // "/* */"
                     peek = expectChar(file, '*');
                     if (peek && peek != -1) {
                         value.push_back(peek);
-                        for (peek = file.get(); peek != -1 && peek != '*';
-                             peek = file.get()) {
+                        for (peek = file.get(); peek != -1 && peek != '*'; peek = file.get()) {
                             value.push_back(peek);
                             if (peek == '\n') {
                                 ++line;
@@ -135,8 +142,7 @@ Token Lexer::scan(std::fstream &file) {
                                 if (peek && peek != -1) {
                                     value.push_back(peek);
                                     peek = file.get();
-                                    return Token(value,
-                                                 TokenType::BLOCK_COMMENT);
+                                    return Token(value, TokenType::BLOCK_COMMENT, line);
                                 } else {
                                     char errmsg[63];
                                     sprintf(errmsg,
@@ -153,7 +159,7 @@ Token Lexer::scan(std::fstream &file) {
 
                     // "/"
                     peek = file.get();
-                    return Token(value, TokenType::DIV);
+                    return Token(value, TokenType::DIV, line);
                     break;
                 }
                 case '%': {
@@ -162,10 +168,10 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::MOD_ASSIGN);
+                        return Token(value, TokenType::MOD_ASSIGN, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::MOD);
+                    return Token(value, TokenType::MOD, line);
                     break;
                 }
                 case '&': {
@@ -174,16 +180,16 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::AND);
+                        return Token(value, TokenType::AND, line);
                     }
                     peek = expectChar(file, '=');
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::BITAND_ASSIGN);
+                        return Token(value, TokenType::BITAND_ASSIGN, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::BITAND);
+                    return Token(value, TokenType::BITAND, line);
                     break;
                 }
                 case '|': {
@@ -192,16 +198,16 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::OR);
+                        return Token(value, TokenType::OR, line);
                     }
                     peek = expectChar(file, '=');
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::BITOR_ASSIGN);
+                        return Token(value, TokenType::BITOR_ASSIGN, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::BITOR);
+                    return Token(value, TokenType::BITOR, line);
                     break;
                 }
                 case '^': {
@@ -210,10 +216,10 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::BITXOR_ASSIGN);
+                        return Token(value, TokenType::BITXOR_ASSIGN, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::BITXOR);
+                    return Token(value, TokenType::BITXOR, line);
                     break;
                 }
                 case '<': {
@@ -225,16 +231,16 @@ Token Lexer::scan(std::fstream &file) {
                         if (peek && peek != -1) {
                             value.push_back(peek);
                             peek = file.get();
-                            return Token(value, TokenType::LSHIFT_ASSIGN);
+                            return Token(value, TokenType::LSHIFT_ASSIGN, line);
                         }
                         peek = file.get();
-                        return Token(value, TokenType::LSHIFT);
+                        return Token(value, TokenType::LSHIFT, line);
                     }
                     peek = expectChar(file, '=');
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::LE);
+                        return Token(value, TokenType::LE, line);
                     }
                     peek = file.get();
                     return Token(value, TokenType::LT);
@@ -248,19 +254,19 @@ Token Lexer::scan(std::fstream &file) {
                         if (peek && peek != -1) {
                             value.push_back(peek);
                             peek = file.get();
-                            return Token(value, TokenType::RSHIFT_ASSIGN);
+                            return Token(value, TokenType::RSHIFT_ASSIGN, line);
                         }
                         peek = file.get();
-                        return Token(value, TokenType::RSHIFT);
+                        return Token(value, TokenType::RSHIFT, line);
                     }
                     peek = expectChar(file, '=');
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::GE);
+                        return Token(value, TokenType::GE, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::GT);
+                    return Token(value, TokenType::GT, line);
                 }
                 case '=': {
                     value.push_back(peek);
@@ -268,16 +274,16 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::EQ);
+                        return Token(value, TokenType::EQ, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::ASSIGN);
+                    return Token(value, TokenType::ASSIGN, line);
                     break;
                 }
                 case '~': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::BITNOT);
+                    return Token(value, TokenType::BITNOT, line);
                 }
                 case '!': {
                     value.push_back(peek);
@@ -285,55 +291,55 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::NEQ);
+                        return Token(value, TokenType::NEQ, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::NOT);
+                    return Token(value, TokenType::NOT, line);
                 }
 
                 // Brackets.
                 case '(': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::LPAREN);
+                    return Token(value, TokenType::LPAREN, line);
                 }
                 case ')': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::RPAREN);
+                    return Token(value, TokenType::RPAREN, line);
                 }
                 case '[': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::LSBRACKET);
+                    return Token(value, TokenType::LSBRACKET, line);
                 }
                 case ']': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::RSBRACKET);
+                    return Token(value, TokenType::RSBRACKET, line);
                 }
                 case '{': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::LBRACE);
+                    return Token(value, TokenType::LBRACE, line);
                 }
                 case '}': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::RBRACE);
+                    return Token(value, TokenType::RBRACE, line);
                 }
 
                 case ',': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::COMMA);
+                    return Token(value, TokenType::COMMA, line);
                 }
                 case '.': {
                     value.push_back(peek);
                     peek = file.get();
                     // Check if the successor is a digit.
                     if (!isdigit(peek)) {
-                        return Token(value, TokenType::PERIOD);
+                        return Token(value, TokenType::PERIOD, line);
                     } else {
                         // If the successor is a digit, recover from the status
                         // before and break.
@@ -349,26 +355,26 @@ Token Lexer::scan(std::fstream &file) {
                     if (peek && peek != -1) {
                         value.push_back(peek);
                         peek = file.get();
-                        return Token(value, TokenType::DBL_COLON);
+                        return Token(value, TokenType::DBL_COLON, line);
                     }
                     peek = file.get();
-                    return Token(value, TokenType::COLON);
+                    return Token(value, TokenType::COLON, line);
                 }
                 case ';': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::SEMICOLON);
+                    return Token(value, TokenType::SEMICOLON, line);
                 }
                 case '?': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::QUESTION_MARK);
+                    return Token(value, TokenType::QUESTION_MARK, line);
                 }
 
                 case '#': {
                     value.push_back(peek);
                     peek = file.get();
-                    return Token(value, TokenType::SHARP);
+                    return Token(value, TokenType::SHARP, line);
                 }
 
                 default:
@@ -385,15 +391,14 @@ Token Lexer::scan(std::fstream &file) {
                 peek = file.get();
             } while (isalpha(peek) || isdigit(peek) || peek == '_');
 
-            if (auto token_pair = keywordMap.find(value);
-                token_pair != keywordMap.end()) {
+            if (auto token_pair = keywordMap.find(value); token_pair != keywordMap.end()) {
                 return Token(token_pair->first, token_pair->second);
             } else if (auto token_pair = preprocessorMap.find(value);
                        token_pair != preprocessorMap.end()) {
                 return Token(token_pair->first, token_pair->second);
             }
 
-            return Token(value, TokenType::IDENTIFIER);
+            return Token(value, TokenType::IDENTIFIER, line);
         }
 
         // Handle C-style string constant.
@@ -414,7 +419,7 @@ Token Lexer::scan(std::fstream &file) {
             }
             value.push_back(peek);
             peek = file.get();
-            return Token(value, TokenType::STRING_CONST);
+            return Token(value, TokenType::STRING_CONST, line);
         }
 
         // Handle character constant.
@@ -440,7 +445,7 @@ Token Lexer::scan(std::fstream &file) {
             value.push_back(peek);
             peek = expectChar(file, '\'');
             if (!peek) {
-                char errmsg[63];
+                char errmsg[127];
                 sprintf(errmsg,
                         "At line %d:\n"
                         "Quotation mark doesn't close, or there are more than "
@@ -451,7 +456,7 @@ Token Lexer::scan(std::fstream &file) {
             }
             value.push_back(peek);
             peek = file.get();
-            return Token(value, TokenType::CHAR_CONST);
+            return Token(value, TokenType::CHAR_CONST, line);
         }
 
         // Handle numbers.
@@ -485,8 +490,7 @@ Token Lexer::scan(std::fstream &file) {
                     }
                     isHex = true;
                 } else if (isalpha(peek)) {
-                    if (!isHex && !((peek >= 'a' && peek <= 'f') ||
-                                    (peek >= 'A' && peek <= 'F'))) {
+                    if (!isHex && !((peek >= 'a' && peek <= 'f') || (peek >= 'A' && peek <= 'F'))) {
                         char errmsg[63];
                         sprintf(errmsg,
                                 "At line %d:\n"
@@ -500,11 +504,13 @@ Token Lexer::scan(std::fstream &file) {
                 value.push_back(peek);
             }
             if (isFloat) {
-                return Token(value, TokenType::FLOAT_CONST);
+                return Token(value, TokenType::FLOAT_CONST, line);
             } else {
-                return Token(value, TokenType::INT_CONST);
+                return Token(value, TokenType::INT_CONST, line);
             }
         }
     }
     return Token();
 }
+
+}  // namespace pluma
