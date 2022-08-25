@@ -1342,6 +1342,15 @@ pluma::Parser::Parser() {
             SymList{Terminal{Token{"sizeof", TokenType::SIZEOF}}, Nonterminal{"type-name"}},
 
         /**
+         * cast-expr -> unary-expr
+         * cast-expr -> '(' type-spec ')' cast-expr
+         */
+        Nonterminal{"cast-expr"} >> SymList{Nonterminal{"unary-expr"}},
+        Nonterminal{"cast-expr"} >>
+            SymList{Terminal{Token{"(", TokenType::LPAREN}}, Nonterminal{"type-spec"},
+                    Terminal{Token{")", TokenType::RPAREN}}, Nonterminal{"cast-expr"}},
+
+        /**
          * postfix-expr -> primary-expr
          * postfix-expr -> postfix-expr '[' expr ']'
          * postfix-expr -> postfix-expr '(' assign-exprs ')'
@@ -1440,11 +1449,60 @@ pluma::Parser::Parser() {
             SymList{
                 Terminal{Token{"<=", TokenType::LE}},
             },
-
-        Nonterminal{"assign-op"} >>
+        Nonterminal{"binary-op"} >>
             SymList{
-                Terminal{Token{"=", TokenType::ASSIGN}},
+                Terminal{Token{"&&", TokenType::AND}},
             },
+        Nonterminal{"binary-op"} >>
+            SymList{
+                Terminal{Token{"||", TokenType::OR}},
+            },
+        Nonterminal{"binary-op"} >>
+            SymList{
+                Terminal{Token{"<<", TokenType::LSHIFT}},
+            },
+        Nonterminal{"binary-op"} >>
+            SymList{
+                Terminal{Token{">>", TokenType::RSHIFT}},
+            },
+        Nonterminal{"binary-op"} >>
+            SymList{
+                Terminal{Token{"&", TokenType::BITAND}},
+            },
+        Nonterminal{"binary-op"} >>
+            SymList{
+                Terminal{Token{"^", TokenType::BITXOR}},
+            },
+        Nonterminal{"binary-op"} >>
+            SymList{
+                Terminal{Token{"|", TokenType::BITOR}},
+            },
+
+        /**
+         * assign-op -> '=' | '*=' | '/=' | '%=' | '+=' | '-='
+         *              | '<<=' | '>>=' | '&=' | '^=' | '|='
+         */
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"=", TokenType::ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"*=", TokenType::MUL_ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"/=", TokenType::DIV_ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"%=", TokenType::MOD_ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"+=", TokenType::ADD_ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"-=", TokenType::SUB_ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"<<=", TokenType::LSHIFT_ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{">>=", TokenType::RSHIFT_ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"&=", TokenType::BITAND_ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"^=", TokenType::BITXOR_ASSIGN}}},
+        Nonterminal{"assign-op"} >> SymList{Terminal{Token{"|=", TokenType::BITOR_ASSIGN}}},
+
+        /**
+         * unary-op -> '&' | '*' | '+' | '-' | '~' | '!'
+         */
+        Nonterminal{"unary-op"} >> SymList{Terminal{Token{"&", TokenType::BITAND}}},
+        Nonterminal{"unary-op"} >> SymList{Terminal{Token{"*", TokenType::MUL}}},
+        Nonterminal{"unary-op"} >> SymList{Terminal{Token{"+", TokenType::ADD}}},
+        Nonterminal{"unary-op"} >> SymList{Terminal{Token{"-", TokenType::SUB}}},
+        Nonterminal{"unary-op"} >> SymList{Terminal{Token{"~", TokenType::BITNOT}}},
+        Nonterminal{"unary-op"} >> SymList{Terminal{Token{"!", TokenType::NOT}}},
 
         Nonterminal{"func-call"} >>
             SymList{
