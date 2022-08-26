@@ -32,10 +32,8 @@ int main() {
 
     pluma::Parser parser;
     parser.grammarPtr->displayAllRule();
-    if (!parser.grammarPtr->checkLR1()) {
-        pluma::Ast ast = parser.grammarPtr->gen(symVec);
-        ast.display();
-    }
+    pluma::Ast ast = parser.grammarPtr->gen(symVec);
+    ast.display();
 
     return 0;
 }

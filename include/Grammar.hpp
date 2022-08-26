@@ -206,6 +206,12 @@ struct Grammar {
         if (actionSet.size() == 0) {
             // the default constructor makes an error action
             actionSet.insert(Action{});
+        } else if (actionSet.size() == 2) {
+            for (auto &action : actionSet) {
+                if (action.actionType == Action::ActionType::PUSH_STACK) {
+                    return action;
+                }
+            }
         }
         return *(actionSet.begin());
     }
@@ -462,11 +468,6 @@ struct Grammar {
                                                                       },
                                                                   }});
                         } else {
-                            if (!LR1_Table[statei][next].empty() &&
-                                LR1_Table[statei][next].begin()->actionType ==
-                                    Action::ActionType::REDUCE) {
-                                LR1_Table[statei][next].clear();
-                            }
                             LR1_Table[statei][next].insert(Action{Action::ActionType::PUSH_STACK, j,
                                                                   Terminal{
                                                                       Token{
