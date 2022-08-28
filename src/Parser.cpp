@@ -32,22 +32,22 @@ pluma::Parser::Parser() {
         /**
          * func-def -> decl-specs declarator decls compound-stmt
          */
-        Nonterminal{"func-def"} >> SymList{Nonterminal{"decl-specs"}, Nonterminal{"declarator"},
-                                           Nonterminal{"decls"}, Nonterminal{"compound-stmt"}},
+        Nonterminal{"func-def"} >> SymList{Nonterminal{"decl-specs*"}, Nonterminal{"declarator"},
+                                           Nonterminal{"decls*"}, Nonterminal{"compound-stmt"}},
 
         /**
          * decl-specs -> decl-specs decl-spec
          * decl-specs -> NIL
          */
-        Nonterminal{"decl-specs"} >> SymList{Nonterminal{"decl-specs"}, Nonterminal{"decl-spec"}},
-        Nonterminal{"decl-specs"} >> SymList{Terminal{Token{"", TokenType::NIL}}},
+        Nonterminal{"decl-specs*"} >> SymList{Nonterminal{"decl-specs*"}, Nonterminal{"decl-spec"}},
+        Nonterminal{"decl-specs*"} >> SymList{Terminal{Token{"", TokenType::NIL}}},
 
         /**
          * decls -> decls decl
          * decls -> NIL
          */
-        Nonterminal{"decls"} >> SymList{Nonterminal{"decls"}, Nonterminal{"decl"}},
-        Nonterminal{"decls"} >> SymList{Terminal{Token{"", TokenType::NIL}}},
+        Nonterminal{"decls*"} >> SymList{Nonterminal{"decls*"}, Nonterminal{"decl"}},
+        Nonterminal{"decls*"} >> SymList{Terminal{Token{"", TokenType::NIL}}},
 
         /**
          * decl-spec -> storage-class-spec
@@ -93,11 +93,11 @@ pluma::Parser::Parser() {
          */
         Nonterminal{"struct-or-union-spec"} >>
             SymList{Nonterminal{"struct-or-union"}, Terminal{Token{"id", TokenType::IDENTIFIER}},
-                    Terminal{Token{"{", TokenType::LBRACE}}, Nonterminal{"struct-decls"},
+                    Terminal{Token{"{", TokenType::LBRACE}}, Nonterminal{"struct-decls*"},
                     Terminal{Token{"}", TokenType::RBRACE}}},
         Nonterminal{"struct-or-union-spec"} >>
             SymList{Nonterminal{"struct-or-union"}, Terminal{Token{"{", TokenType::LBRACE}},
-                    Nonterminal{"struct-decls"}, Terminal{Token{"}", TokenType::RBRACE}}},
+                    Nonterminal{"struct-decls*"}, Terminal{Token{"}", TokenType::RBRACE}}},
         Nonterminal{"struct-or-union-spec"} >>
             SymList{Nonterminal{"struct-or-union"}, Terminal{Token{"id", TokenType::IDENTIFIER}}},
 
@@ -112,9 +112,9 @@ pluma::Parser::Parser() {
          * struct-decls -> struct-decl
          */
         // TODO: Check it.
-        Nonterminal{"struct-decls"} >>
-            SymList{Nonterminal{"struct-decls"}, Nonterminal{"struct-decl"}},
-        Nonterminal{"struct-decls"} >> SymList{Nonterminal{"struct-decl"}},
+        Nonterminal{"struct-decls*"} >>
+            SymList{Nonterminal{"struct-decls*"}, Nonterminal{"struct-decl"}},
+        Nonterminal{"struct-decls*"} >> SymList{Nonterminal{"struct-decl"}},
 
         /**
          * struct-decl -> spec-qualifiers struct-declarator-list
@@ -544,14 +544,14 @@ pluma::Parser::Parser() {
         Nonterminal{"decl-specs+"} >> SymList{Nonterminal{"decl-spec"}},
 
         /**
-         * abstract-declarator -> pointer
-         * abstract-declarator -> pointer direct-abstract-declarator
+         * abstract-declarator -> ptr
+         * abstract-declarator -> ptr direct-abstract-declarator
          * abstract-declarator -> direct-abstract-declarator
          */
-        Nonterminal{"abstract-declarator"} >> SymList{Nonterminal{"pointer"}},
+        Nonterminal{"abstract-declarator"} >> SymList{Nonterminal{"ptr"}},
         Nonterminal{"abstract-declarator"} >> SymList{Nonterminal{"direct-abstract-declarator"}},
         Nonterminal{"abstract-declarator"} >>
-            SymList{Nonterminal{"pointer"}, Nonterminal{"direct-abstract-declarator"}},
+            SymList{Nonterminal{"ptr"}, Nonterminal{"direct-abstract-declarator"}},
 
         /**
          * direct-abstract-declarator -> '(' abstract-declarator ')'
@@ -730,7 +730,7 @@ pluma::Parser::Parser() {
         Nonterminal{"compound-stmt"} >>
             SymList{
                 Terminal{Token{"{", TokenType::LBRACE}},
-                Nonterminal{"decls"},
+                Nonterminal{"decls*"},
                 Nonterminal{"stmts"},
                 Terminal{Token{"}", TokenType::RBRACE}},
             },
@@ -989,88 +989,372 @@ pluma::Parser::Parser() {
         Nonterminal{"ext-defs"} >> SymList{Nonterminal{"ext-defs"}, Nonterminal{"ext-def"}},
         Nonterminal{"ext-defs"} >> SymList{Nonterminal{"ext-def"}},
 
-        Nonterminal{"ext-def"} >> SymList{Nonterminal{"var-def"}},
+        Nonterminal{"ext-def"} >> SymList{Nonterminal{"decl"}},
         Nonterminal{"ext-def"} >> SymList{Nonterminal{"func-def"}},
 
-        Nonterminal{"var-def"} >>
+        /**
+         * func-def -> decl-spec func-direct-declarator compound-stmt
+         * func-def -> decl-spec func-direct-declarator ;
+         */
+        Nonterminal{"func-def"} >> SymList{Nonterminal{"decl-spec"},
+                                           Nonterminal{"func-direct-declarator"},
+                                           Nonterminal{"compound-stmt"}},
+        Nonterminal{"func-def"} >> SymList{Nonterminal{"decl-spec"},
+                                           Nonterminal{"func-direct-declarator"},
+                                           Terminal{Token{";", TokenType::SEMICOLON}}},
+
+        /**
+         * decl-spec -> storage-class-spec? type-qualifier? type-spec
+         */
+        Nonterminal{"decl-spec"} >>
             SymList{
+                Nonterminal{"storage-class-spec?"},
+                Nonterminal{"type-qualifier?"},
                 Nonterminal{"type-spec"},
-                Nonterminal{"vars"},
+            },
+        Nonterminal{"storage-class-spec?"} >> SymList{Nonterminal{"storage-class-spec"}},
+        Nonterminal{"storage-class-spec?"} >> SymList{Terminal{Token{"nil", TokenType::NIL}}},
+        Nonterminal{"type-qualifier?"} >> SymList{Nonterminal{"type-qualifier"}},
+        Nonterminal{"type-qualifier?"} >> SymList{Terminal{Token{"nil", TokenType::NIL}}},
+
+        /**
+         * storage-class-spec -> STATIC | EXTERN | TYPEDEF
+         */
+        Nonterminal{"storage-class-spec"} >> SymList{Terminal{Token{"static", TokenType::STATIC}}},
+        Nonterminal{"storage-class-spec"} >> SymList{Terminal{Token{"extern", TokenType::EXTERN}}},
+        Nonterminal{"storage-class-spec"} >>
+            SymList{Terminal{Token{"typedef", TokenType::TYPEDEF}}},
+
+        /**
+         * type-spec -> VOID | CHAR | SHORT | INT | LONG | FLOAT
+         *              | DOUBLE | SIGNED | UNSIGNED
+         * type-spec -> struct-or-union-spec
+         * type-spec -> enum-spec
+         * type-spec -> IDENTIFIER
+         */
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"void", TokenType::VOID}}},
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"char", TokenType::CHAR}}},
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"short", TokenType::SHORT}}},
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"int", TokenType::INT}}},
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"long", TokenType::LONG}}},
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"float", TokenType::FLOAT}}},
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"double", TokenType::DOUBLE}}},
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"signed", TokenType::SIGNED}}},
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"unsigned", TokenType::UNSIGNED}}},
+        Nonterminal{"type-spec"} >> SymList{Nonterminal{"struct-or-union-spec"}},
+        Nonterminal{"type-spec"} >> SymList{Nonterminal{"enum-spec"}},
+        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"id", TokenType::IDENTIFIER}}},
+
+        /**
+         * struct-or-union-spec -> struct-or-union IDENTIFIER '{' struct-decls '}'
+         * struct-or-union-spec -> struct-or-union '{' struct-decls '}'
+         * struct-or-union-spec -> struct-or-union IDENTIFIER
+         */
+        Nonterminal{"struct-or-union-spec"} >>
+            SymList{Nonterminal{"struct-or-union"}, Terminal{Token{"id", TokenType::IDENTIFIER}},
+                    Terminal{Token{"{", TokenType::LBRACE}}, Nonterminal{"struct-decls*"},
+                    Terminal{Token{"}", TokenType::RBRACE}}},
+        Nonterminal{"struct-or-union-spec"} >>
+            SymList{Nonterminal{"struct-or-union"}, Terminal{Token{"{", TokenType::LBRACE}},
+                    Nonterminal{"struct-decls*"}, Terminal{Token{"}", TokenType::RBRACE}}},
+        Nonterminal{"struct-or-union-spec"} >>
+            SymList{Nonterminal{"struct-or-union"}, Terminal{Token{"id", TokenType::IDENTIFIER}}},
+
+        /**
+         * struct-or-union -> STRUCT | UNION
+         */
+        Nonterminal{"struct-or-union"} >> SymList{Terminal{Token{"struct", TokenType::STRUCT}}},
+        Nonterminal{"struct-or-union"} >> SymList{Terminal{Token{"union", TokenType::UNION}}},
+
+        /**
+         * struct-decls -> struct-decls struct-decl
+         * struct-decls -> nil
+         */
+        // TODO: Check it.
+        Nonterminal{"struct-decls*"} >>
+            SymList{Nonterminal{"struct-decls*"}, Nonterminal{"struct-decl"}},
+        Nonterminal{"struct-decls*"} >> SymList{Terminal{Token{"nil", TokenType::NIL}}},
+
+        /**
+         * struct-decl -> decl-spec struct-declarator-list ';'
+         */
+        Nonterminal{"struct-decl"} >>
+            SymList{
+                Nonterminal{"decl-spec"},
+                Nonterminal{"struct-declarator-list"},
                 Terminal{Token{";", TokenType::SEMICOLON}},
             },
 
-        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"int", TokenType::INT}}},
-        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"char", TokenType::CHAR}}},
-        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"short", TokenType::SHORT}}},
-        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"float", TokenType::FLOAT}}},
-        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"double", TokenType::DOUBLE}}},
-        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"unsigned", TokenType::UNSIGNED}}},
-        Nonterminal{"type-spec"} >> SymList{Terminal{Token{"void", TokenType::VOID}}},
+        /**
+         * struct-declarator-list -> struct-declarator
+         * struct-declarator-list -> struct-declarator-list ',' struct-declarator
+         */
+        Nonterminal{"struct-declarator-list"} >> SymList{Nonterminal{"struct-declarator"}},
+        Nonterminal{"struct-declarator-list"} >> SymList{Nonterminal{"struct-declarator-list"},
+                                                         Terminal{Token{",", TokenType::COMMA}},
+                                                         Nonterminal{"struct-declarator"}},
 
-        Nonterminal{"vars"} >>
+        /**
+         * struct-declarator -> declarator
+         * struct-declarator -> declarator ':' expr
+         * struct-declarator -> ':' expr
+         */
+        Nonterminal{"struct-declarator"} >> SymList{Nonterminal{"declarator"}},
+        Nonterminal{"struct-declarator"} >> SymList{Nonterminal{"declarator"},
+                                                    Terminal{Token{":", TokenType::COLON}},
+                                                    Nonterminal{"expr"}},
+        Nonterminal{"struct-declarator"} >>
+            SymList{Terminal{Token{":", TokenType::COLON}}, Nonterminal{"expr"}},
+
+        /**
+         * enum-spec -> ENUM IDENTIFIER '{' enumerator-list '}'
+         * enum-spec -> ENUM '{' enumerator-list '}'
+         * enum-spec -> ENUM IDENTIFIER
+         */
+        Nonterminal{"enum-spec"} >>
             SymList{
-                Nonterminal{"vars"},
-                Terminal{Token{",", TokenType::COMMA}},
-                Nonterminal{"var"},
-            },
-        Nonterminal{"vars"} >> SymList{Nonterminal{"var"}},
-
-        Nonterminal{"var"} >> SymList{Terminal{Token{"id", TokenType::IDENTIFIER}}},
-
-        Nonterminal{"func-def"} >>
-            SymList{
-                Nonterminal{"type-spec"},
+                Terminal{Token{"enum", TokenType::ENUM}},
                 Terminal{Token{"id", TokenType::IDENTIFIER}},
+                Terminal{Token{"{", TokenType::LBRACE}},
+                Nonterminal{"enumerator-list"},
+                Terminal{Token{"}", TokenType::RBRACE}},
+            },
+        Nonterminal{"enum-spec"} >>
+            SymList{
+                Terminal{Token{"enum", TokenType::ENUM}},
+                Terminal{Token{"{", TokenType::LBRACE}},
+                Nonterminal{"enumerator-list"},
+                Terminal{Token{"}", TokenType::RBRACE}},
+            },
+        Nonterminal{"enum-spec"} >>
+            SymList{
+                Terminal{Token{"enum", TokenType::ENUM}},
+                Terminal{Token{"id", TokenType::IDENTIFIER}},
+            },
+
+        /**
+         * enumerator-list -> enumerator
+         * enumerator-list -> enumerator-list ',' enumerator
+         */
+        Nonterminal{"enumerator-list"} >> SymList{Nonterminal{"enumerator"}},
+        Nonterminal{"enumerator-list"} >>
+            SymList{
+                Nonterminal{"enumerator-list"},
+                Terminal{Token{",", TokenType::COMMA}},
+                Nonterminal{"enumerator"},
+            },
+
+        /**
+         * enumerator -> IDENTIFIER
+         * enumerator -> IDENTIFIER '=' expr
+         */
+        Nonterminal{"enumerator"} >>
+            SymList{
+                Terminal{Token{"id", TokenType::IDENTIFIER}},
+            },
+        Nonterminal{"enumerator"} >>
+            SymList{
+                Terminal{Token{"id", TokenType::IDENTIFIER}},
+                Terminal{Token{"=", TokenType::ASSIGN}},
+                Nonterminal{"expr"},
+            },
+
+        /**
+         * declarator -> ptr? direct-declarator
+         * declarator -> direct-declarator
+         */
+        Nonterminal{"declarator"} >> SymList{Nonterminal{"ptr?"}, Nonterminal{"direct-declarator"}},
+        Nonterminal{"declarator"} >> SymList{Nonterminal{"direct-declarator"}},
+        Nonterminal{"ptr?"} >> SymList{Nonterminal{"ptr"}},
+        Nonterminal{"ptr?"} >> SymList{Terminal{Token{"nil", TokenType::NIL}}},
+
+        /**
+         * ptr -> * type-qualifiers* ptr
+         * ptr -> * type-qualifiers*
+         */
+        // FIXME: Seems to be right-recursive, should be checked.
+        Nonterminal{"ptr"} >> SymList{Terminal{Token{"*", TokenType::MUL}},
+                                      Nonterminal{"type-qualifiers*"}, Nonterminal{"ptr"}},
+        Nonterminal{"ptr"} >>
+            SymList{Terminal{Token{"*", TokenType::MUL}}, Nonterminal{"type-qualifiers*"}},
+
+        /**
+         * type-qualifiers* -> type-qualifiers* type-qualifier
+         * type-qualifiers* -> NIL
+         */
+        Nonterminal{"type-qualifiers*"} >>
+            SymList{Nonterminal{"type-qualifiers*"}, Nonterminal{"type-qualifier"}},
+        Nonterminal{"type-qualifiers*"} >> SymList{Terminal{Token{"nil", TokenType::NIL}}},
+
+        /**
+         * type-qualifier -> CONST | VOLATILE
+         */
+        Nonterminal{"type-qualifier"} >> SymList{Terminal{Token{"const", TokenType::CONST}}},
+        Nonterminal{"type-qualifier"} >> SymList{Terminal{Token{"volatile", TokenType::VOLATILE}}},
+
+        /**
+         * direct-declarator -> IDENTIFIER
+         * direct-declarator -> '(' declarator ')'
+         * direct-declarator -> array-direct-declarator
+         * direct-declarator -> func-direct-declarator
+         */
+        Nonterminal{"direct-declarator"} >> SymList{Terminal{Token{"id", TokenType::IDENTIFIER}}},
+        Nonterminal{"direct-declarator"} >>
+            SymList{
                 Terminal{Token{"(", TokenType::LPAREN}},
-                Nonterminal{"params"},
+                Nonterminal{"declarator"},
                 Terminal{Token{")", TokenType::RPAREN}},
-                Nonterminal{"compound-stmt"},
+            },
+        Nonterminal{"direct-declarator"} >> SymList{Nonterminal{"array-direct-declarator"}},
+        Nonterminal{"direct-declarator"} >> SymList{Nonterminal{"func-direct-declarator"}},
+
+        /**
+         * func-direct-declarator -> direct-declarator '(' param-type-list? ')'
+         */
+        Nonterminal{"func-direct-declarator"} >>
+            SymList{
+                Nonterminal{"direct-declarator"},
+                Terminal{Token{"(", TokenType::LPAREN}},
+                Nonterminal{"param-type-list?"},
+                Terminal{Token{")", TokenType::RPAREN}},
+            },
+        Nonterminal{"param-type-list?"} >> SymList{Nonterminal{"param-type-list"}},
+        Nonterminal{"param-type-list?"} >> SymList{Terminal{Token{"nil", TokenType::NIL}}},
+
+        /**
+         * param-type-list -> param-decl
+         * param-type-list -> param-type-list ',' param-decl
+         */
+        Nonterminal{"param-type-list"} >> SymList{Nonterminal{"param-decl"}},
+        Nonterminal{"param-type-list"} >> SymList{Nonterminal{"param-type-list"},
+                                                  Terminal{Token{",", TokenType::COMMA}},
+                                                  Nonterminal{"param-decl"}},
+
+        /**
+         * param-decl -> decl-spec declarator
+         */
+        Nonterminal{"param-decl"} >> SymList{Nonterminal{"decl-spec"}, Nonterminal{"declarator"}},
+
+        /**
+         * array-direct-declarator -> direct-declarator '[' expr? ']'
+         */
+        Nonterminal{"array-direct-declarator"} >>
+            SymList{
+                Nonterminal{"direct-declarator"},
+                Terminal{Token{"[", TokenType::LSBRACKET}},
+                Nonterminal{"expr?"},
+                Terminal{Token{"]", TokenType::RSBRACKET}},
             },
 
-        Nonterminal{"params"} >>
+        /**
+         * decl -> decl-spec init-declarator-list? ';'
+         */
+        Nonterminal{"decl"} >>
             SymList{
-                Nonterminal{"params"},
+                Nonterminal{"decl-spec"},
+                Nonterminal{"init-declarator-list?"},
+                Terminal{Token{";", TokenType::SEMICOLON}},
+            },
+
+        /**
+         * init-declarator-list? -> init-declarator-list
+         * init-declarator-list? -> NIL
+         */
+        Nonterminal{"init-declarator-list?"} >>
+            SymList{
+                Nonterminal{"init-declarator-list"},
+            },
+        Nonterminal{"init-declarator-list?"} >>
+            SymList{
+                Terminal{Token{"nil", TokenType::NIL}},
+            },
+
+        /**
+         * init-declarator-list -> init-declarator-list ',' init-declarator
+         * init-declarator-list -> init-declarator
+         */
+        Nonterminal{"init-declarator-list"} >> SymList{Nonterminal{"init-declarator"}},
+        Nonterminal{"init-declarator-list"} >> SymList{Nonterminal{"init-declarator-list"},
+                                                       Terminal{Token{",", TokenType::COMMA}},
+                                                       Nonterminal{"init-declarator"}},
+
+        /**
+         * init-declarator -> declarator
+         * init-declarator -> declarator '=' initializer
+         */
+        Nonterminal{"init-declarator"} >>
+            SymList{
+                Nonterminal{"declarator"},
+            },
+        Nonterminal{"init-declarator"} >>
+            SymList{
+                Nonterminal{"declarator"},
+                Terminal{Token{"=", TokenType::ASSIGN}},
+                Nonterminal{"initializer"},
+            },
+
+        /**
+         * initializer -> expr
+         * initializer -> '{' initializer-list '}'
+         * initializer -> '{' initializer-list ',' '}'
+         */
+        Nonterminal{"initializer"} >>
+            SymList{
+                Nonterminal{"expr"},
+            },
+        Nonterminal{"initializer"} >>
+            SymList{
+                Terminal{Token{"{", TokenType::LBRACE}},
+                Nonterminal{"initializer-list"},
+                Terminal{Token{"}", TokenType::RBRACE}},
+            },
+        Nonterminal{"initializer"} >>
+            SymList{
+                Terminal{Token{"{", TokenType::LBRACE}},
+                Nonterminal{"initializer-list"},
                 Terminal{Token{",", TokenType::COMMA}},
-                Nonterminal{"param"},
-            },
-        Nonterminal{"params"} >>
-            SymList{
-                Nonterminal{"param"},
+                Terminal{Token{"}", TokenType::RBRACE}},
             },
 
-        Nonterminal{"param"} >>
+        /**
+         * initializer-list -> initializer
+         * initializer-list -> initializer-list ',' initializer
+         */
+        Nonterminal{"initializer-list"} >>
             SymList{
-                Nonterminal{"type-spec"},
-                Terminal{Token{"id", TokenType::IDENTIFIER}},
+                Nonterminal{"initializer"},
             },
-        Nonterminal{"param"} >> SymList{Terminal{Token{"nil", TokenType::NIL}}},
+        Nonterminal{"initializer-list"} >>
+            SymList{
+                Nonterminal{"initializer-list"},
+                Terminal{Token{",", TokenType::COMMA}},
+                Nonterminal{"initializer"},
+            },
 
         Nonterminal{"compound-stmt"} >>
             SymList{
                 Terminal{Token{"{", TokenType::LBRACE}},
-                Nonterminal{"var-defs"},
-                Nonterminal{"stmts"},
+                Nonterminal{"decl-or-stmts*"},
                 Terminal{Token{"}", TokenType::RBRACE}},
             },
 
-        Nonterminal{"var-defs"} >>
+        Nonterminal{"decl-or-stmts*"} >>
             SymList{
-                Nonterminal{"var-defs"},
-                Nonterminal{"var-def"},
+                Nonterminal{"decl-or-stmts*"},
+                Nonterminal{"decl-or-stmt"},
             },
-        Nonterminal{"var-defs"} >>
+        Nonterminal{"decl-or-stmts*"} >>
             SymList{
                 Terminal{Token{"nil", TokenType::NIL}},
             },
 
-        Nonterminal{"stmts"} >>
+        Nonterminal{"decl-or-stmt"} >>
             SymList{
-                Nonterminal{"stmts"},
-                Nonterminal{"stmt"},
+                Nonterminal{"decl"},
             },
-        Nonterminal{"stmts"} >>
+        Nonterminal{"decl-or-stmt"} >>
             SymList{
-                Terminal{Token{"nil", TokenType::NIL}},
+                Nonterminal{"stmt"},
             },
 
         /**
@@ -1162,6 +1446,8 @@ pluma::Parser::Parser() {
          * iter-stmt -> WHILE '(' expr ')' stmt
          * iter-stmt -> DO stmt WHILE '(' expr ')' ';'
          * iter-stmt -> FOR '(' expr? ';' expr? ';' expr? ')' stmt
+         * iter-stmt -> FOR '(' decl  expr? ';' expr? ')' stmt
+         * NOTE: the last rule is ugly.
          */
         Nonterminal{"iter-stmt"} >>
             SymList{
@@ -1185,11 +1471,11 @@ pluma::Parser::Parser() {
             SymList{
                 Terminal{Token{"for", TokenType::FOR}},
                 Terminal{Token{"(", TokenType::LPAREN}},
-                Nonterminal{"expr"},
+                Nonterminal{"expr?"},
                 Terminal{Token{";", TokenType::SEMICOLON}},
-                Nonterminal{"expr"},
+                Nonterminal{"expr?"},
                 Terminal{Token{";", TokenType::SEMICOLON}},
-                Nonterminal{"expr"},
+                Nonterminal{"expr?"},
                 Terminal{Token{")", TokenType::RPAREN}},
                 Nonterminal{"stmt"},
             },
@@ -1197,74 +1483,16 @@ pluma::Parser::Parser() {
             SymList{
                 Terminal{Token{"for", TokenType::FOR}},
                 Terminal{Token{"(", TokenType::LPAREN}},
-                Nonterminal{"expr"},
+                Nonterminal{"decl"},
+                // Terminal{Token{";", TokenType::SEMICOLON}},
+                Nonterminal{"expr?"},
                 Terminal{Token{";", TokenType::SEMICOLON}},
-                Nonterminal{"expr"},
-                Terminal{Token{";", TokenType::SEMICOLON}},
+                Nonterminal{"expr?"},
                 Terminal{Token{")", TokenType::RPAREN}},
                 Nonterminal{"stmt"},
             },
-        Nonterminal{"iter-stmt"} >>
-            SymList{
-                Terminal{Token{"for", TokenType::FOR}},
-                Terminal{Token{"(", TokenType::LPAREN}},
-                Nonterminal{"expr"},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Nonterminal{"expr"},
-                Terminal{Token{")", TokenType::RPAREN}},
-                Nonterminal{"stmt"},
-            },
-        Nonterminal{"iter-stmt"} >>
-            SymList{
-                Terminal{Token{"for", TokenType::FOR}},
-                Terminal{Token{"(", TokenType::LPAREN}},
-                Nonterminal{"expr"},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Terminal{Token{")", TokenType::RPAREN}},
-                Nonterminal{"stmt"},
-            },
-        Nonterminal{"iter-stmt"} >>
-            SymList{
-                Terminal{Token{"for", TokenType::FOR}},
-                Terminal{Token{"(", TokenType::LPAREN}},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Nonterminal{"expr"},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Nonterminal{"expr"},
-                Terminal{Token{")", TokenType::RPAREN}},
-                Nonterminal{"stmt"},
-            },
-        Nonterminal{"iter-stmt"} >>
-            SymList{
-                Terminal{Token{"for", TokenType::FOR}},
-                Terminal{Token{"(", TokenType::LPAREN}},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Nonterminal{"expr"},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Terminal{Token{")", TokenType::RPAREN}},
-                Nonterminal{"stmt"},
-            },
-        Nonterminal{"iter-stmt"} >>
-            SymList{
-                Terminal{Token{"for", TokenType::FOR}},
-                Terminal{Token{"(", TokenType::LPAREN}},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Nonterminal{"expr"},
-                Terminal{Token{")", TokenType::RPAREN}},
-                Nonterminal{"stmt"},
-            },
-        Nonterminal{"iter-stmt"} >>
-            SymList{
-                Terminal{Token{"for", TokenType::FOR}},
-                Terminal{Token{"(", TokenType::LPAREN}},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-                Terminal{Token{")", TokenType::RPAREN}},
-                Nonterminal{"stmt"},
-            },
+        Nonterminal{"expr?"} >> SymList{Nonterminal{"expr"}},
+        Nonterminal{"expr?"} >> SymList{Terminal{Token{"nil", TokenType::NIL}}},
 
         /**
          * jump-stmt -> GOTO IDENTIFIER ';'
@@ -1291,13 +1519,7 @@ pluma::Parser::Parser() {
         Nonterminal{"jump-stmt"} >>
             SymList{
                 Terminal{Token{"return", TokenType::RETURN}},
-                Nonterminal{"expr"},
-                Terminal{Token{";", TokenType::SEMICOLON}},
-            },
-
-        Nonterminal{"jump-stmt"} >>
-            SymList{
-                Terminal{Token{"return", TokenType::RETURN}},
+                Nonterminal{"expr?"},
                 Terminal{Token{";", TokenType::SEMICOLON}},
             },
 
@@ -1343,12 +1565,13 @@ pluma::Parser::Parser() {
 
         /**
          * cast-expr -> unary-expr
-         * cast-expr -> '(' type-spec ')' cast-expr
+         * cast-expr -> '(' type-spec ptr? ')' cast-expr
          */
         Nonterminal{"cast-expr"} >> SymList{Nonterminal{"unary-expr"}},
-        Nonterminal{"cast-expr"} >>
-            SymList{Terminal{Token{"(", TokenType::LPAREN}}, Nonterminal{"type-spec"},
-                    Terminal{Token{")", TokenType::RPAREN}}, Nonterminal{"cast-expr"}},
+        Nonterminal{"cast-expr"} >> SymList{Terminal{Token{"(", TokenType::LPAREN}},
+                                            Nonterminal{"type-spec"}, Nonterminal{"ptr?"},
+                                            Terminal{Token{")", TokenType::RPAREN}},
+                                            Nonterminal{"cast-expr"}},
 
         /**
          * postfix-expr -> primary-expr
@@ -1365,10 +1588,10 @@ pluma::Parser::Parser() {
                     Nonterminal{"expr"}, Terminal{Token{"]", TokenType::RSBRACKET}}},
         Nonterminal{"postfix-expr"} >> SymList{Nonterminal{"postfix-expr"},
                                                Terminal{Token{".", TokenType::PERIOD}},
-                                               Terminal{Token{"id", TokenType::IDENTIFIER}}},
+                                               Nonterminal{"primary-expr"}},
         Nonterminal{"postfix-expr"} >> SymList{Nonterminal{"postfix-expr"},
                                                Terminal{Token{"->", TokenType::ARROW}},
-                                               Terminal{Token{"id", TokenType::IDENTIFIER}}},
+                                               Nonterminal{"primary-expr"}},
         Nonterminal{"postfix-expr"} >>
             SymList{Nonterminal{"postfix-expr"}, Terminal{Token{"++", TokenType::INCR}}},
         Nonterminal{"postfix-expr"} >>

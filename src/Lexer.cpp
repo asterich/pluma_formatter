@@ -392,10 +392,10 @@ Token Lexer::scan(std::fstream &file) {
             } while (isalpha(peek) || isdigit(peek) || peek == '_');
 
             if (auto token_pair = keywordMap.find(value); token_pair != keywordMap.end()) {
-                return Token(token_pair->first, token_pair->second);
+                return Token(token_pair->first, token_pair->second, line);
             } else if (auto token_pair = preprocessorMap.find(value);
                        token_pair != preprocessorMap.end()) {
-                return Token(token_pair->first, token_pair->second);
+                return Token(token_pair->first, token_pair->second, line);
             }
 
             return Token(value, TokenType::IDENTIFIER, line);
