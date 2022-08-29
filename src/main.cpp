@@ -1,4 +1,5 @@
 #include "Ast.hpp"
+#include "Formatter.h"
 #include "Lexer.h"
 #include "Parser.h"
 // #include "main.h"
@@ -14,7 +15,9 @@ void panic(const char *info) {
 }
 
 int main() {
-    file.open("/Users/asterich/Desktop/MyPrograms/C++/compiler_learning/pluma_formatter/test.txt");
+    file.open(
+        "/Users/asterich/Desktop/MyPrograms/C++/compiler_learning/pluma_formatter/example/"
+        "test.txt");
     if (!file.is_open()) {
         panic("Failed to open file!\n");
     }
@@ -35,6 +38,10 @@ int main() {
     parser.grammarPtr->checkLR1();
     pluma::Ast ast = parser.grammarPtr->gen(symVec);
     ast.display();
+
+    pluma::Formatter formatter(
+        "/Users/asterich/Desktop/MyPrograms/C++/compiler_learning/pluma_formatter/example/out.txt");
+    formatter.format(ast);
 
     return 0;
 }

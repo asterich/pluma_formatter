@@ -22,18 +22,27 @@ struct AstNode {
     // apply any destruct operation on it.
     AstNode *lastBrother;
 
+    // The number of one node's sons. Should be calculated at 'appendSons()'.
+    size_t sonCnt;
+
     AstNode()
         : sym(Terminal{Token{"", TokenType::NIL}}),
           parent(nullptr),
           brother(nullptr),
           son(nullptr),
-          lastBrother(nullptr) {}
+          lastBrother(nullptr),
+          sonCnt(0) {}
 
     // When a node is created with a sym that makes sense, it has no parent,
     // brother or son, but the "lastBrother" is just itself.
     AstNode(Sym _sym, AstNode *_parent = nullptr, AstNode *_brother = nullptr,
             AstNode *_son = nullptr)
-        : sym(std::move(_sym)), parent(_parent), brother(_brother), son(_son), lastBrother(this) {
+        : sym(std::move(_sym)),
+          parent(_parent),
+          brother(_brother),
+          son(_son),
+          lastBrother(this),
+          sonCnt(0) {
         // this->display();
     }
 
@@ -46,7 +55,8 @@ struct AstNode {
           parent(other.parent),
           brother(std::move(other.brother)),
           son(std::move(other.son)),
-          lastBrother(other.lastBrother) {
+          lastBrother(other.lastBrother),
+          sonCnt(other.sonCnt) {
         other.parent = other.brother = other.son = other.lastBrother = nullptr;
     }
 
@@ -73,6 +83,7 @@ struct AstNode {
             this->brother = other.brother;
             this->son = other.son;
             this->lastBrother = other.lastBrother;
+            this->sonCnt = other.sonCnt;
             other.brother = other.son = other.lastBrother = nullptr;
         }
         return *this;
@@ -90,6 +101,7 @@ struct AstNode {
             this->son->lastBrother = newSon->lastBrother;
             newSon->parent = this;
         }
+        ++this->sonCnt;
         return;
     }
 
