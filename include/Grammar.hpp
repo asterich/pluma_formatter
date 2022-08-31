@@ -125,7 +125,8 @@ struct Grammar {
     };
 
     std::map<std::set<LR1_Item>, std::set<LR1_Item>> CLOSURE_SET;
-    std::vector<std::set<LR1_Item>> C_SET;
+    std::set<std::set<LR1_Item>> C_SET;
+    size_t beginStateIndex;
 
     std::set<LR1_Item> &CLOSURE(const std::set<LR1_Item> &i) {
         auto result = CLOSURE_SET.find(i);
@@ -386,19 +387,20 @@ struct Grammar {
             return true;
         };
         // [S' -> S, $]
-        std::vector<std::set<LR1_Item>> C{CLOSURE({LR1_Item{
+        auto beginState = CLOSURE({LR1_Item{
             pRule[0],
             0,
             Token{
                 "",
                 TokenType::TK_EOF,
             },
-        }})};
+        }});
+        std::set<std::set<LR1_Item>> C{beginState};
         bool increased = false;
         do {
             increased = false;
 
-            for (std::set<LR1_Item> &itemSet : C) {
+            for (const std::set<LR1_Item> &itemSet : C) {
                 std::vector<std::set<LR1_Item>> newAddToC;
                 std::set<Sym> nextSym;
                 for (const LR1_Item &item : itemSet) {
@@ -409,25 +411,26 @@ struct Grammar {
                 for (const Sym &x : nextSym) {
                     auto &iset = LR1_GOTO(itemSet, x);
 
-                    if (!iset.empty() &&
-                        std::find_if(C.begin(), C.end(), [&](std::set<LR1_Item> &aim) {
-                            return LR1_Item_Set_Equal(iset, aim);
-                        }) == C.end()) {
+                    if (!iset.empty() && C.find(iset) == C.end()) {
                         newAddToC.push_back(iset);
                         increased = true;
                     }
                 }
-                C.insert(C.end(), newAddToC.begin(), newAddToC.end());
+                for (auto &newSet : newAddToC) {
+                    C.insert(newSet);
+                }
             }
 
         } while (increased);
         C_SET = C;
 
+        // this->display_LR1_C_SET();
+
         // 构造LR(1)的语法分析表
         std::map<size_t, std::map<Sym, std::set<Action>, SymLess>> &lr1_Table = LR1_Table;
-        for (size_t statei = 0; statei < C.size(); ++statei) {
+        for (size_t statei = 0; auto &state : C) {
             std::set<Sym> nextSet;
-            for (const LR1_Item &prod : C[statei]) {
+            for (const LR1_Item &prod : state) {
                 if (prod.isCurrPosAtEnd()) {
                     if (prod.rule.first == pRule[0].first) {
                         // S' -> S, 完成
@@ -455,10 +458,9 @@ struct Grammar {
                 }
             }
             for (auto &next : nextSet) {
-                const auto &nextState = LR1_GOTO(C[statei], next);
-                for (size_t j = 0; j < C.size(); j++) {
-                    auto &IJ = C[j];
-                    if (LR1_Item_Set_Equal(IJ, nextState)) {
+                const auto &nextState = LR1_GOTO(state, next);
+                for (size_t j = 0; auto &IJ : C) {
+                    if (IJ == nextState) {
                         if (std::holds_alternative<Nonterminal>(next)) {
                             LR1_Table[statei][next].insert(Action{Action::ActionType::GOTO, j,
                                                                   Terminal{
@@ -477,8 +479,16 @@ struct Grammar {
                                                                   }});
                         }
                     }
+                    ++j;
                 }
             }
+            ++statei;
+        }
+        for (size_t statei = 0; auto &state : C_SET) {
+            if (state == beginState) {
+                beginStateIndex = statei;
+            }
+            ++statei;
         }
     }
 
@@ -490,7 +500,7 @@ struct Grammar {
         std::vector<size_t> stateStack;
         std::vector<AstNode *> nodeStack;
         size_t strPos = 0;
-        stateStack.push_back(0);
+        stateStack.push_back(beginStateIndex);
         while (1) {
             Sym currSym = str[strPos];
             size_t state = stateStack.back();
@@ -671,12 +681,13 @@ struct Grammar {
     }
 
     void display_LR1_C_SET() {
-        for (size_t i = 0; i < C_SET.size(); ++i) {
+        for (size_t i = 0; auto &state : C_SET) {
             std::cout << "===============\n";
             std::cout << "state " << i << ":\n";
             std::cout << "---------------\n";
-            std::cout << C_SET[i];
+            std::cout << state;
             std::cout << "===============\n";
+            ++i;
         }
     }
 
