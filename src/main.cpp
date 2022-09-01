@@ -6,22 +6,19 @@
 #include "Parser.h"
 // #include "main.h"
 
-std::fstream inputFile;
-
 void panic(const char *info) {
     std::cerr << "\nError: " << info << std::endl;
-    inputFile.close();
     std::abort();
 }
 
 int main(int argc, char *argv[]) {
     int opt;
-    std::string inputFileName, outputFileName;
+    std::string inputFilename, outputFilename;
 
     while ((opt = getopt(argc, argv, "o:")) != -1) {
         switch (opt) {
             case 'o':
-                outputFileName = optarg;
+                outputFilename = optarg;
                 std::cout << "-o:" << optarg << std::endl;
                 break;
             default: /* '?' */
@@ -35,23 +32,10 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    inputFileName = argv[optind];
+    inputFilename = argv[optind];
 
-    inputFile.open(inputFileName);
-    if (!inputFile.is_open()) {
-        panic("Failed to open file!\n");
-    }
-
-    pluma::Lexer lexer;
-    std::vector<pluma::Sym> symVec;
-    while (!inputFile.eof()) {
-        pluma::Token token = lexer.scan(inputFile);
-        if (token.tokenType != pluma::TokenType::UNKNOWN) {
-            symVec.push_back(pluma::Terminal{token});
-        }
-    }
-    inputFile.close();
-    symVec.push_back(pluma::Terminal{pluma::Token{"EOF", pluma::TokenType::TK_EOF}});
+    pluma::Lexer lexer(inputFilename);
+    std::vector<pluma::Sym> symVec = lexer.tokenize();
 
     pluma::Parser parser;
     parser.grammarPtr->displayAllRule();
@@ -59,7 +43,7 @@ int main(int argc, char *argv[]) {
     pluma::Ast ast = parser.grammarPtr->gen(symVec);
     ast.display();
 
-    pluma::Formatter formatter(outputFileName);
+    pluma::Formatter formatter(outputFilename);
     formatter.format(ast);
 
     return 0;

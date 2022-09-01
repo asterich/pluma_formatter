@@ -2,6 +2,19 @@
 
 namespace pluma {
 
+Lexer::Lexer(std::string inputFilename) {
+    this->inputFile.open(inputFilename);
+
+    if (!this->inputFile.is_open()) {
+        this->inputFile.clear();
+        this->inputFile.open(inputFilename, std::ios::out);  // 创建文件
+        this->inputFile.close();
+        this->inputFile.open(inputFilename);
+    }
+}
+
+Lexer::~Lexer() { this->inputFile.close(); }
+
 // Get a char; if the next character is the expected one, return it;
 // else unget and return 0.
 char expectChar(std::fstream &file, char expectedChar) {
@@ -511,6 +524,18 @@ Token Lexer::scan(std::fstream &file) {
         }
     }
     return Token();
+}
+
+std::vector<pluma::Sym> Lexer::tokenize() {
+    std::vector<pluma::Sym> symVec;
+    while (!this->inputFile.eof()) {
+        pluma::Token token = this->scan(this->inputFile);
+        if (token.tokenType != pluma::TokenType::UNKNOWN) {
+            symVec.push_back(pluma::Terminal{token});
+        }
+    }
+    symVec.push_back(pluma::Terminal{pluma::Token{"EOF", pluma::TokenType::TK_EOF}});
+    return symVec;
 }
 
 }  // namespace pluma

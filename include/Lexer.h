@@ -13,11 +13,20 @@ namespace pluma {
 
 class Lexer {
    private:
+    std::fstream inputFile;
     char peek = ' ';
     int line = 1;
 
-   public:
+   private:
+    Lexer() = delete;
+    Lexer(const Lexer &) = delete;
+    Lexer(Lexer &&) = delete;
     Token scan(std::fstream &file);
+
+   public:
+    Lexer(std::string inputFilename);
+    ~Lexer();
+    std::vector<pluma::Sym> tokenize();
 };
 
 }  // namespace pluma
