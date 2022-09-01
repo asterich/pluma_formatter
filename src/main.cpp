@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
         switch (opt) {
             case 'o':
                 outputFilename = optarg;
-                std::cout << "-o:" << optarg << std::endl;
+                // std::cout << "-o:" << optarg << std::endl;
                 break;
             default: /* '?' */
                 fprintf(stderr, "Usage: %s [-o output_file]  input_file\n", argv[0]);

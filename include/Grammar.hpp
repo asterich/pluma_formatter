@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "Ast.hpp"
+#include "Logger.h"
 
 namespace pluma {
 
@@ -177,17 +178,17 @@ struct Grammar {
             currAddNum = j.size();
         } while (currAddNum != prevAddNum);
 
-        // std::cout << "i:";
+        // logger << "i:";
         // for (auto &nt : i) {
-        //     std::cout << nt << ' ';
+        //     logger << nt << ' ';
         // }
-        // std::cout << std::endl;
+        // logger << std::endl;
 
-        // std::cout << "closure(i) : ";
+        // logger << "closure(i) : ";
         // for (auto &nt : j) {
-        //     std::cout << nt << ' ';
+        //     logger << nt << ' ';
         // }
-        // std::cout << std::endl;
+        // logger << std::endl;
 
         return CLOSURE_SET[i] = j;
     }
@@ -286,15 +287,15 @@ struct Grammar {
             CURR_FIRST_SIZE = CALC_FIRST_SET_COUNT();
         } while (LAST_FIRST_SIZE != CURR_FIRST_SIZE);
 
-        std::cout << "first set:\n";
+        logger << "first set:\n";
         for (auto &first : FIRST_SET) {
-            std::cout << "FIRST(" << first.first << ") = ";
+            logger << "FIRST(" << first.first << ") = ";
             for (auto &firstSyms : first.second) {
-                std::cout << " " << firstSyms << " ";
+                logger << " " << firstSyms << " ";
             }
-            std::cout << std::endl;
+            logger << std::endl;
         }
-        std::cout << std::endl;
+        logger << std::endl;
 
         // 构造FOLLOW_SET
         FOLLOW_SET[S].insert(Terminal{
@@ -362,15 +363,15 @@ struct Grammar {
             CURR_FOLLOW_SIZE = CALC_FOLLOW_SET_COUNT();
         } while (LAST_FOLLOW_SIZE != CURR_FOLLOW_SIZE);
 
-        std::cout << "follow set:\n";
+        logger << "follow set:\n";
         for (auto &follow : FOLLOW_SET) {
-            std::cout << "FOLLOW(" << follow.first << ") = ";
+            logger << "FOLLOW(" << follow.first << ") = ";
             for (auto &followSyms : follow.second) {
-                std::cout << " " << followSyms << " ";
+                logger << " " << followSyms << " ";
             }
-            std::cout << std::endl;
+            logger << std::endl;
         }
-        std::cout << std::endl;
+        logger << std::endl;
 
         // 构造LR(1)_Item
         auto LR1_Item_Set_Equal = [](const std::set<LR1_Item> &s1,
@@ -494,7 +495,7 @@ struct Grammar {
 
     Ast gen(std::vector<Sym> str) {
         if (str.empty()) {
-            std::cout << "\nsource file is empty\n\n";
+            logger << "\nsource file is empty\n\n";
             return Ast(nullptr);
         }
         std::vector<size_t> stateStack;
@@ -515,9 +516,9 @@ struct Grammar {
                     isRuleEpsilon = true;
                 }
                 auto &takenAction = isRuleEpsilon ? epsilonAction : action;
-                std::cout << "Current state : " << state << ", symbol : " << currSym << std::endl;
-                std::cout << "Current action : " << (int)takenAction.actionType << " "
-                          << takenAction.state << std::endl;
+                logger << "Current state : " << state << ", symbol : " << currSym << std::endl;
+                logger << "Current action : " << (int)takenAction.actionType << " "
+                       << takenAction.state << std::endl;
                 switch (takenAction.actionType) {
                     case Action::ActionType::REDUCE: {
                         auto &rule = ORIGIN_PRODUCE_RULES[action.state];
@@ -543,7 +544,7 @@ struct Grammar {
                         }
                         nodeStack.push_back(leftSymNode);
 
-                        std::cout << rule;
+                        logger << rule;
                         break;
                     }
                     case Action::ActionType::PUSH_STACK: {
@@ -560,12 +561,12 @@ struct Grammar {
                         break;
                     }
                     case Action::ActionType::ACCEPT: {
-                        std::cout << "\nFinished parse procedure.\n";
+                        logger << "\nFinished parse procedure.\n";
                         AstNode *headPtr = nodeStack.back();
                         nodeStack.pop_back();
                         if (nodeStack.size()) {
                             // Not an AST-tree.
-                            std::cout << "\nNot an ast-tree!\n";
+                            logger << "\nNot an ast-tree!\n";
                             goto err_failed_to_recover;
                         }
                         return Ast(headPtr);
@@ -576,9 +577,9 @@ struct Grammar {
                 }
             } else {
             error:
-                std::cout << "ERROR: state " << state << ", symbol " << currSym
-                          << " have an error action.\n";
-                std::cout << "At line " << std::get<Terminal>(currSym).token.line << ":";
+                logger << "ERROR: state " << state << ", symbol " << currSym
+                       << " have an error action.\n";
+                logger << "At line " << std::get<Terminal>(currSym).token.line << ":";
                 std::vector<Terminal> shouldBe;
                 if (LR1_Table.find(state) != LR1_Table.end()) {
                     for (auto &actionList : LR1_Table.at(state)) {
@@ -591,7 +592,7 @@ struct Grammar {
                 }
                 if (shouldBe.size()) {
                     for (auto &expectedTerminal : shouldBe) {
-                        std::cout << expectedTerminal << " expected.\n";
+                        logger << expectedTerminal << " expected.\n";
                         break;
                     }
                 }
@@ -613,17 +614,17 @@ struct Grammar {
                 std::set<Action> &actionSet = symCol.second;
                 if (actionSet.size() >= 2) {
                     if (!result) {
-                        std::cout << "LR1 has grammatical conflict:\n\n\n";
+                        logger << "LR1 has grammatical conflict:\n\n\n";
                         result = true;
                     }
-                    std::cout << "In state " << stateIndex << ", symbol " << sym << std::endl;
+                    logger << "In state " << stateIndex << ", symbol " << sym << std::endl;
                     for (auto &action : actionSet) {
                         if (action.actionType == Action::ActionType::REDUCE)
-                            std::cout << "R" << action.state << std::endl;
+                            logger << "R" << action.state << std::endl;
                         else if (action.actionType == Action::ActionType::PUSH_STACK)
-                            std::cout << "S" << action.state << std::endl;
+                            logger << "S" << action.state << std::endl;
                     }
-                    std::cout << std::endl << std::endl;
+                    logger << std::endl << std::endl;
                 }
             }
         }
@@ -633,43 +634,43 @@ struct Grammar {
     void display_LR1_Table() {
         for (auto &state : LR1_Table) {
             size_t stateIndex = state.first;
-            std::cout << std::setw(12) << "";
+            logger << std::setw(12) << "";
             for (auto &symCol : state.second) {
-                std::cout << std::setw(12) << symCol.first;
+                logger << std::setw(12) << symCol.first;
             }
-            std::cout << std::endl;
-            std::cout << std::setw(12) << stateIndex;
+            logger << std::endl;
+            logger << std::setw(12) << stateIndex;
             for (auto &symCol : state.second) {
                 std::set<Action> &actionSet = symCol.second;
                 for (auto &action : actionSet) {
                     switch (action.actionType) {
                         case Action::ActionType::PUSH_STACK: {
-                            std::cout << std::setw(12)
-                                      << (std::string("S") + std::to_string(action.state));
+                            logger << std::setw(12)
+                                   << (std::string("S") + std::to_string(action.state));
                             break;
                         }
                         case Action::ActionType::REDUCE: {
-                            std::cout << std::setw(12)
-                                      << (std::string("R") + std::to_string(action.state));
+                            logger << std::setw(12)
+                                   << (std::string("R") + std::to_string(action.state));
                             break;
                         }
                         case Action::ActionType::ERROR: {
-                            std::cout << std::setw(12) << "E";
+                            logger << std::setw(12) << "E";
                             break;
                         }
                         case Action::ActionType::GOTO: {
-                            std::cout << std::setw(12)
-                                      << (std::string("G") + std::to_string(action.state));
+                            logger << std::setw(12)
+                                   << (std::string("G") + std::to_string(action.state));
                             break;
                         }
                         case Action::ActionType::ACCEPT: {
-                            std::cout << std::setw(12) << "A";
+                            logger << std::setw(12) << "A";
                             break;
                         }
                     }
                 }
             }
-            std::cout << std::endl << std::endl;
+            logger << std::endl << std::endl;
         }
     }
 
@@ -682,21 +683,21 @@ struct Grammar {
 
     void display_LR1_C_SET() {
         for (size_t i = 0; auto &state : C_SET) {
-            std::cout << "===============\n";
-            std::cout << "state " << i << ":\n";
-            std::cout << "---------------\n";
-            std::cout << state;
-            std::cout << "===============\n";
+            logger << "===============\n";
+            logger << "state " << i << ":\n";
+            logger << "---------------\n";
+            logger << state;
+            logger << "===============\n";
             ++i;
         }
     }
 
     void displayAllRule() {
-        std::cout << "\nrules:\n\n";
+        logger << "\nrules:\n\n";
         for (size_t i = 0; i < ORIGIN_PRODUCE_RULES.size(); ++i) {
-            std::cout << i << ":" << ORIGIN_PRODUCE_RULES[i];
+            logger << i << ":" << ORIGIN_PRODUCE_RULES[i];
         }
-        std::cout << "\n\n";
+        logger << "\n\n";
         return;
     }
 };
