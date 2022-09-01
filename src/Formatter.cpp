@@ -80,7 +80,7 @@ void Formatter::formatNode(const AstNode *nodePtr, const size_t indents) {
                 AstNode *rbrace = decl_or_stmts_zero_or_more->brother;
 
                 formatNode(lbrace, indents);
-                this->out << '\n';
+                // this->out << '\n';
 
                 // '\n'
                 formatNode(decl_or_stmts_zero_or_more, indents + 1);
