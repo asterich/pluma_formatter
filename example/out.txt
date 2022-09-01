@@ -31,8 +31,8 @@ int main() {
     return 0;
 }
 
-union fuckYou {
-    fuckYourMother HUST;
+union fishYou {
+    fishYourMother ust;
     int nice;
 } ;
 

@@ -19,6 +19,6 @@ case 168:{break;}
 }
 
 union
-fuckYou {fuckYourMother HUST;
+fishYou {fishYourMother ust;
     int nice;};static void puxi(int puxi, int cat) { for (int bigcock = 0; bigcock;)
 {"shift";}}
