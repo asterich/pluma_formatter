@@ -37,7 +37,83 @@ void Formatter::formatNode(const AstNode *nodePtr, const size_t indents) {
     } else {
         // Nonterminal
         auto &nt = std::get<Nonterminal>(nodePtr->sym);
-        if (nt.token == "ext-defs") {
+        if (nt.token == "program") {
+            AstNode *preprocessors = nodePtr->son;
+            AstNode *ext_defs = preprocessors->brother;
+
+            formatNode(preprocessors, indents);
+            if (preprocessors->son != nullptr) {
+                this->out << "\n";
+            }
+            formatNode(ext_defs, indents);
+
+        } else if (nt.token == "preprocessors") {
+            if (nodePtr->son) {
+                AstNode *preprocessor = nodePtr->son;
+                AstNode *preprocessors = preprocessor->brother;
+
+                formatNode(preprocessor, indents);
+                this->out << '\n';
+                formatNode(preprocessors, indents);
+            }
+        } else if (nt.token == "include-preprocessor") {
+            switch (nodePtr->sonCnt) {
+                case 3: {
+                    AstNode *sharp = nodePtr->son;
+                    AstNode *include_ = sharp->brother;
+                    AstNode *string_const = include_->brother;
+
+                    formatNode(sharp, indents);
+                    formatNode(include_, indents);
+                    this->out << ' ';
+                    formatNode(string_const, indents);
+                    break;
+                }
+                case 5: {
+                    AstNode *sharp = nodePtr->son;
+                    AstNode *include_ = sharp->brother;
+                    AstNode *lt = include_->brother;
+                    AstNode *path = lt->brother;
+                    AstNode *gt = path->brother;
+
+                    formatNode(sharp, indents);
+                    formatNode(include_, indents);
+                    this->out << ' ';
+                    formatNode(lt, indents);
+                    formatNode(path, indents);
+                    formatNode(gt, indents);
+                    break;
+                }
+            }
+        } else if (nt.token == "define-preprocessor") {
+            switch (nodePtr->sonCnt) {
+                case 3: {
+                    AstNode *sharp = nodePtr->son;
+                    AstNode *define_ = sharp->brother;
+                    AstNode *id = define_->brother;
+
+                    formatNode(sharp, indents);
+                    formatNode(define_, indents);
+                    this->out << ' ';
+                    formatNode(id, indents);
+                    break;
+                }
+                case 4: {
+                    AstNode *sharp = nodePtr->son;
+                    AstNode *define_ = sharp->brother;
+                    AstNode *id = define_->brother;
+                    AstNode *expr = id->brother;
+
+                    formatNode(sharp, indents);
+                    formatNode(define_, indents);
+                    this->out << ' ';
+                    formatNode(id, indents);
+                    this->out << ' ';
+                    formatNode(expr, indents);
+                    break;
+                }
+            }
+        } else if (nt.token == "ext-defs") {
             // ext-defs ->  ext-defs  ext-def
             // ext-defs ->  ext-def
             switch (nodePtr->sonCnt) {

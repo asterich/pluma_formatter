@@ -984,7 +984,101 @@ pluma::Parser::Parser() {
 
         Nonterminal{"program-aug"} >> SymList{Nonterminal{"program"}},
 
-        Nonterminal{"program"} >> SymList{Nonterminal{"ext-defs"}},
+        /**
+         * program -> preprocessors ext-defs
+         */
+        Nonterminal{"program"} >> SymList{Nonterminal{"preprocessors"}, Nonterminal{"ext-defs"}},
+
+        /**
+         * preprocessors -> preprocessors preprocessor
+         * preprocessors -> NIL
+         */
+        Nonterminal{"preprocessors"} >>
+            SymList{Nonterminal{"preprocessor"}, Nonterminal{"preprocessors"}},
+        Nonterminal{"preprocessors"} >> SymList{Terminal{Token{"nil", TokenType::NIL}}},
+
+        /**
+         * preprocessor -> include-preprocessor
+         * preprocessor -> define-preprocessor
+         */
+        Nonterminal{"preprocessor"} >> SymList{Nonterminal{"include-preprocessor"}},
+        Nonterminal{"preprocessor"} >> SymList{Nonterminal{"define-preprocessor"}},
+
+        /**
+         * include-preprocessor -> '#' INCLUDE '<' path '>'
+         * include-preprocessor -> '#' INCLUDE STRING_CONST
+         */
+        Nonterminal{"include-preprocessor"} >>
+            SymList{
+                Terminal{Token{"#", TokenType::SHARP}},
+                Terminal{Token{"include", TokenType::INCLUDE}},
+                Terminal{Token{"<", TokenType::LT}},
+                Nonterminal{"path"},
+                Terminal{Token{">", TokenType::GT}},
+            },
+        Nonterminal{"include-preprocessor"} >>
+            SymList{
+                Terminal{Token{"#", TokenType::SHARP}},
+                Terminal{Token{"include", TokenType::INCLUDE}},
+                Terminal{Token{"STRING_CONST", TokenType::STRING_CONST}},
+            },
+
+        /**
+         * define-preprocessor -> '#' DEFINE id
+         * define-preprocessor -> '#' DEFINE id expr
+         */
+        Nonterminal{"define-preprocessor"} >>
+            SymList{
+                Terminal{Token{"#", TokenType::SHARP}},
+                Terminal{Token{"define", TokenType::DEFINE}},
+                Terminal{Token{"id", TokenType::IDENTIFIER}},
+            },
+        Nonterminal{"define-preprocessor"} >>
+            SymList{
+                Terminal{Token{"#", TokenType::SHARP}},
+                Terminal{Token{"define", TokenType::DEFINE}},
+                Terminal{Token{"id", TokenType::IDENTIFIER}},
+                Nonterminal{"expr"},
+            },
+
+        /**
+         * path -> path '/' file-or-dir
+         * path -> file-or-dir
+         */
+        Nonterminal{"path"} >>
+            SymList{
+                Nonterminal{"path"},
+                Terminal{Token{"/", TokenType::DIV}},
+                Nonterminal{"file-or-dir"},
+            },
+        Nonterminal{"path"} >>
+            SymList{
+                Nonterminal{"file-or-dir"},
+            },
+
+        /**
+         * file-or-dir -> '.' '.' | '.' | id | id '.' id
+         * NOTE: this is an incomplete filename format.
+         */
+        Nonterminal{"file-or-dir"} >>
+            SymList{
+                Terminal{Token{".", TokenType::PERIOD}},
+                Terminal{Token{".", TokenType::PERIOD}},
+            },
+        Nonterminal{"file-or-dir"} >>
+            SymList{
+                Terminal{Token{".", TokenType::PERIOD}},
+            },
+        Nonterminal{"file-or-dir"} >>
+            SymList{
+                Terminal{Token{"id", TokenType::IDENTIFIER}},
+            },
+        Nonterminal{"file-or-dir"} >>
+            SymList{
+                Terminal{Token{"id", TokenType::IDENTIFIER}},
+                Terminal{Token{".", TokenType::PERIOD}},
+                Terminal{Token{"id", TokenType::IDENTIFIER}},
+            },
 
         Nonterminal{"ext-defs"} >> SymList{Nonterminal{"ext-defs"}, Nonterminal{"ext-def"}},
         Nonterminal{"ext-defs"} >> SymList{Nonterminal{"ext-def"}},
