@@ -503,7 +503,8 @@ Token Lexer::scan(std::fstream &file) {
                     }
                     isHex = true;
                 } else if (isalpha(peek)) {
-                    if (!isHex && !((peek >= 'a' && peek <= 'f') || (peek >= 'A' && peek <= 'F'))) {
+                    if (!(isHex &&
+                          ((peek >= 'a' && peek <= 'f') || (peek >= 'A' && peek <= 'F')))) {
                         char errmsg[63];
                         sprintf(errmsg,
                                 "At line %d:\n"
@@ -517,6 +518,15 @@ Token Lexer::scan(std::fstream &file) {
                 value.push_back(peek);
             }
             if (isFloat) {
+                if (isHex) {
+                    char errmsg[63];
+                    sprintf(errmsg,
+                            "At line %d:\n"
+                            "Wrong character appeared in a number\n",
+                            line);
+                    panic(errmsg);
+                    return Token();
+                }
                 return Token(value, TokenType::FLOAT_CONST, line);
             } else {
                 return Token(value, TokenType::INT_CONST, line);
