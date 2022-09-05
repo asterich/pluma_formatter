@@ -6,10 +6,8 @@ Lexer::Lexer(std::string inputFilename) {
     this->inputFile.open(inputFilename);
 
     if (!this->inputFile.is_open()) {
-        this->inputFile.clear();
-        this->inputFile.open(inputFilename, std::ios::out);  // 创建文件
-        this->inputFile.close();
-        this->inputFile.open(inputFilename);
+        std::cerr << "Cannot open input file.\n";
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -30,10 +28,6 @@ char expectChar(std::fstream &file, char expectedChar) {
 }
 
 Token Lexer::scan(std::fstream &file) {
-    if (!file.is_open()) {
-        std::cerr << "File is not open.\n";
-        return Token();
-    }
     if (file.eof()) {
         return Token();
     }
