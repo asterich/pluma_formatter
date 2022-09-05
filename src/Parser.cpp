@@ -1617,6 +1617,12 @@ pluma::Parser::Parser() {
                 Terminal{Token{";", TokenType::SEMICOLON}},
             },
 
+        /**
+         * expr -> unary-expr binary-op expr
+         * expr -> unary-expr assign-op expr
+         * expr -> unary-expr
+         * expr -> expr ? expr : expr
+         */
         Nonterminal{"expr"} >>
             SymList{
                 Nonterminal{"unary-expr"},
@@ -1670,7 +1676,6 @@ pluma::Parser::Parser() {
         /**
          * postfix-expr -> primary-expr
          * postfix-expr -> postfix-expr '[' expr ']'
-         * postfix-expr -> postfix-expr '(' assign-exprs ')'
          * postfix-expr -> postfix-expr '.' IDENTIFIER
          * postfix-expr -> postfix-expr '->' IDENTIFIER
          * postfix-expr -> postfix-expr '++'
@@ -1691,6 +1696,15 @@ pluma::Parser::Parser() {
         Nonterminal{"postfix-expr"} >>
             SymList{Nonterminal{"postfix-expr"}, Terminal{Token{"--", TokenType::DECR}}},
 
+        /**
+         * primary-expr -> IDENTIFIER
+         * primary-expr -> INT_CONST
+         * primary-expr -> FLOAT_CONST
+         * primary-expr -> CHAR_CONST
+         * primary-expr -> STRING_CONST
+         * primary-expr -> func-call
+         * primary-expr -> '(' expr ')'
+         */
         Nonterminal{"primary-expr"} >>
             SymList{
                 Terminal{Token{"id", TokenType::IDENTIFIER}},
