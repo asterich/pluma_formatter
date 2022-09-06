@@ -14,7 +14,7 @@ int main() {
         return 0;
     }
     while (0) {
-        int friedrich = 0X19ab / *id * (++i + &j->fl.cla);
+        int friedrich = 0x19ab / *id * (++i + &j->fl.cla);
     }
     do {
     } while (1);
