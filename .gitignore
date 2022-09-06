@@ -4,3 +4,5 @@ build/
 backus_naur_C.txt
 log.txt
 example/out.txt
+data/*
+.DS_Store
