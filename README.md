@@ -6,7 +6,7 @@
 
 羽毛笔镇楼
 
-![pluma](img/pluma2.jpg)
+![pluma](img/pluma2.png)
 
 ### 支持功能
 
