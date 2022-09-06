@@ -14,6 +14,7 @@
 
 #include "Ast.hpp"
 #include "Logger.h"
+#include "utils/Hash.h"
 
 namespace pluma {
 
@@ -55,6 +56,9 @@ struct Grammar {
 
     std::set<Terminal> P_TERMINAL_SET;
     std::set<Nonterminal> P_NONTERMINAL_SET;
+
+    std::vector<Sym> symVec;
+    std::map<Sym, size_t> symIndexMap;
 
     std::map<size_t, std::map<Sym, std::set<Action>, SymLess>> LR1_Table;
 
@@ -245,6 +249,50 @@ struct Grammar {
             },
         });
 
+        size_t symIndex = 0;
+
+        for (auto &terminal : P_TERMINAL_SET) {
+            symVec.push_back(terminal);
+            symIndexMap.insert(std::pair{Sym(terminal), symIndex++});
+        }
+
+        for (auto &nonterminal : P_NONTERMINAL_SET) {
+            symVec.push_back(nonterminal);
+            symIndexMap.insert(std::pair{Sym(nonterminal), symIndex++});
+        }
+
+#ifdef HAS_OPENSSL
+        const std::string grammarFile = "../../src/Parser.cpp";
+        const std::string hashFile = "../../data/hash.txt";
+
+        std::string hash = utils::fileHash(grammarFile);
+        std::string hashFromFile;
+
+        if (utils::loadHashFromFile(hashFile, hashFromFile)) {
+            if (hash == hashFromFile) {
+                this->LR1_Table.clear();
+                bool readLR1TableSuccess =
+                    this->readLR1TableFromFile("../../data/lr1_table_cache.txt");
+                if (readLR1TableSuccess) {
+                    return;
+                } else {
+                    goto failed_to_read;
+                }
+            }
+        }
+
+    failed_to_read:
+        // Failed to generate hash or read from lr1_table cachefile.
+        this->genLR1Table(pRule);
+        this->writeLR1TableToFile("../../data/lr1_table_cache.txt");
+        utils::saveHashToFile(hashFile, utils::fileHash(grammarFile));
+
+#else
+        this->genLR1Table(pRule);
+#endif
+    }
+
+    void genLR1Table(const std::vector<Rule> &pRule) {
         // 构造FIRST_SET
         int LAST_FIRST_SIZE = 0;
         int CURR_FIRST_SIZE = 0;
@@ -441,7 +489,8 @@ struct Grammar {
                                                   TokenType::TK_EOF,
                                               },
                                           }]
-                            .insert(Action{Action::ActionType::ACCEPT, (size_t)-1, prod.lookahead});
+                            .insert(
+                                Action{Action::ActionType::ACCEPT, (size_t)10000, prod.lookahead});
                     } else {
                         size_t originIndex =
                             (size_t)(std::find(ORIGIN_PRODUCE_RULES.begin(),
@@ -491,6 +540,80 @@ struct Grammar {
             }
             ++statei;
         }
+    }
+
+    void writeLR1TableToFile(std::string filename) {
+        // Open the file or create it if not exist.
+        std::fstream file;
+        file.open(filename, std::ios::out);
+        if (!file.is_open()) {
+            file.clear();
+            file.open(filename, std::ios::out);
+            file.close();
+            file.open(filename);
+        }
+        file.sync_with_stdio(false);
+
+        for (auto &statePair : LR1_Table) {
+            file << statePair.first << '\n';
+            for (auto &symPair : statePair.second) {
+                file << symIndexMap[symPair.first] << ' ';
+                for (auto &action : symPair.second) {
+                    file << (size_t)action.actionType << ' ' << action.state << ' ';
+                }
+                file << -1 << ' ' << -1 << '\n';
+            }
+            file << -1 << '\n';
+        }
+        file << -2 << '\n';
+
+        file << this->beginStateIndex << '\n';
+
+        // Close the file.
+        file.close();
+    }
+
+    bool readLR1TableFromFile(std::string filename) {
+        std::ifstream file;
+        file.open(filename, std::ios::in);
+        if (!file.is_open()) {
+            logger << "Failed to read from cache file.\n";
+            return false;
+        }
+        file.sync_with_stdio(false);
+        while (!file.eof()) {
+            int32_t state_i32 = 0;
+            file >> state_i32;
+            while (state_i32 != -2) {
+                size_t state = (size_t)state_i32;
+                int32_t symIndex_i32 = 0;
+                file >> symIndex_i32;
+                while (symIndex_i32 != -1) {
+                    size_t symIndex = (size_t)symIndex_i32;
+                    int32_t actionType_i32, toState_i32;
+                    file >> actionType_i32 >> toState_i32;
+                    while (actionType_i32 != -1) {
+                        size_t actionType = (size_t)actionType_i32;
+                        size_t toState = (size_t)toState_i32;
+                        this->LR1_Table[state][symVec[symIndex]].insert(Action{
+                            (Action::ActionType)actionType,
+                            toState,
+                        });
+                        file >> actionType_i32 >> toState_i32;
+                    }
+                    file >> symIndex_i32;
+                }
+                file >> state_i32;
+            }
+            if (state_i32 == -2) {
+                break;
+            }
+        }
+
+        file >> this->beginStateIndex;
+
+        file.close();
+        return true;
     }
 
     Ast gen(std::vector<Sym> str) {
