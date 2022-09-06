@@ -4,44 +4,81 @@
 
 支持大部分 C89 语法，能够应付课设的任务了罢
 
-- 构建方法:
+羽毛笔镇楼
 
-  1. \*nix
+![pluma](img/pluma.jpg)
 
-     ```bash
-     cd pluma_formatter
-     mkdir build
-     cd build
-     cmake ..
-     make
-     ```
+### 支持功能
 
-  2. Windows
+- 大部分C89语法
+  
+  - 表达式
+  
+  - 各种复合语句
+  
+  - 部分预处理语句(#include、#define，需要在文件开头)
 
-     （应该不支持）
+- LR1表缓存，加快运行速度（依赖OpenSSL）
 
-- 使用方法:
+### 构建方法
 
-  ```bash
-  # 可执行文件在 build/src 下
-  cd build/src
-  ./main -o <output_file> <input_file>
-  ```
+1. \*nix
+   
+   ```bash
+   cd pluma_formatter
+   mkdir build
+   cd build
+   cmake ..
+   make
+   ```
 
-- 不支持的语法（已知）
+2. Windows
+   
+   （应该不支持）
 
-  1. 类型转换
+### 使用方法
 
-     ```c
-     int *ptr = (int *)src;
-     ```
+```bash
+# 可执行文件在 build/src 下
+cd build/src
+./main -o <output_file> <input_file>
+```
 
-  2. 函数体内的自定义类型
+### 不支持的语法（已知）
 
-     ```c
-     int main() {
-        Parser parser = yaju + 114514;
-     }
-     ```
+1. 类型转换
+   
+   ```c
+   int *ptr = (int *)src;
+   ```
 
-  3. 注释和预处理
+2. 函数体内的自定义类型
+   
+   ```c
+   int main() {
+      Parser parser = yaju + 114514;
+   }
+   ```
+
+3. 注释
+   
+   ```c
+   // 不支持的注释
+   ```
+
+4. 部分预处理语句
+   
+   ```c
+   int foo() {
+   // 不支持函数内的预处理语句
+   #define JUDA "juda"
+       printf("%s", JUDA);
+   #ifndef JUDA
+   #define JUDA "huge"
+   }
+   
+   // 不支持函数间的预处理语句
+   #include <unistd.h>
+   
+   int bar() {}
+   ```
