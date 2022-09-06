@@ -6,24 +6,24 @@
 
 羽毛笔镇楼
 
-![pluma](img/pluma.jpg)
+![pluma](img/pluma2.jpg)
 
 ### 支持功能
 
-- 大部分C89语法
-  
+- 大部分 C89 语法
+
   - 表达式
-  
+
   - 各种复合语句
-  
+
   - 部分预处理语句(#include、#define，需要在文件开头)
 
-- LR1表缓存，加快运行速度（依赖OpenSSL）
+- LR1 表缓存，加快运行速度（依赖 OpenSSL）
 
 ### 构建方法
 
 1. \*nix
-   
+
    ```bash
    cd pluma_formatter
    mkdir build
@@ -33,7 +33,7 @@
    ```
 
 2. Windows
-   
+
    （应该不支持）
 
 ### 使用方法
@@ -47,13 +47,13 @@ cd build/src
 ### 不支持的语法（已知）
 
 1. 类型转换
-   
+
    ```c
    int *ptr = (int *)src;
    ```
 
 2. 函数体内的自定义类型
-   
+
    ```c
    int main() {
       Parser parser = yaju + 114514;
@@ -61,13 +61,13 @@ cd build/src
    ```
 
 3. 注释
-   
+
    ```c
    // 不支持的注释
    ```
 
 4. 部分预处理语句
-   
+
    ```c
    int foo() {
    // 不支持函数内的预处理语句
@@ -76,9 +76,9 @@ cd build/src
    #ifndef JUDA
    #define JUDA "huge"
    }
-   
+
    // 不支持函数间的预处理语句
    #include <unistd.h>
-   
+
    int bar() {}
    ```
