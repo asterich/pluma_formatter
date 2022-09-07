@@ -10,10 +10,13 @@ struct StackInterface {
 int yaju = 114514;
 
 int main() {
+    // this is a line comment
+    // this is another line comment
     for (int i = 1; i < 55; ++i) {
         return 0;
     }
     while (0) {
+        /* this is a block comment */
         int friedrich = 0x19ab / *id * (++i + &j->fl.cla);
     }
     do {

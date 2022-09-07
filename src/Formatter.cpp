@@ -33,6 +33,13 @@ void Formatter::formatNode(const AstNode *nodePtr, const size_t indents) {
     if (std::holds_alternative<Terminal>(nodePtr->sym)) {
         // Terminal
         this->out << nodePtr->sym;
+        if (std::get<Terminal>(nodePtr->sym).token.comments.size() != 0) {
+            for (auto comment : std::get<Terminal>(nodePtr->sym).token.comments) {
+                this->out << '\n';
+                printIndents(indents + 1);
+                this->out << comment;
+            }
+        }
         return;
     } else {
         // Nonterminal

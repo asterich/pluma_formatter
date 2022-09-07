@@ -199,7 +199,6 @@ const std::map<std::string, TokenType> keywordMap{
 
 /**
  * @brief Preprocessing directive map using `std::map`.
- * TODO: To be replaced with my implementation.
  */
 const std::map<std::string, TokenType> preprocessorMap{
     {"include", TokenType::INCLUDE},
@@ -210,16 +209,21 @@ struct Token {
     std::string value;
     TokenType tokenType;
 
+    std::vector<Token> comments;
+
     size_t line;
 
     Token();
-    Token(std::string _value, TokenType _type, size_t _line = 0);
+    Token(std::string _value, TokenType _type, size_t _line = 0, std::vector<Token> _comments = {});
     Token(const Token &other);
     Token(Token &&other);
     ~Token() = default;
 
-    // copy operator required by std::variant
+    // copy assign operator required by std::variant
     Token &operator=(const Token &other);
+
+    // move assign operator
+    Token &operator=(Token &&other);
 };
 
 // 终结符 / 非终结符
@@ -227,6 +231,8 @@ struct Terminal {
     Token token;
 
     Terminal(const Token &token) : token(token) {}
+
+    Terminal(Token &&token) : token(std::move(token)) {}
 
     // Only for std::map and std::set.
     bool operator<(const Terminal &rhs) const {

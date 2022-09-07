@@ -535,7 +535,16 @@ std::vector<pluma::Sym> Lexer::tokenize() {
     while (!this->inputFile.eof()) {
         pluma::Token token = this->scan(this->inputFile);
         if (token.tokenType != pluma::TokenType::UNKNOWN) {
-            symVec.push_back(pluma::Terminal{token});
+            if (token.tokenType != TokenType::BLOCK_COMMENT &&
+                token.tokenType != TokenType::LINE_COMMENT) {
+                symVec.push_back(pluma::Terminal{token});
+            } else {
+                auto prevNoncommentSymIter = symVec.rbegin();
+                if (prevNoncommentSymIter != symVec.rend()) {
+                    // A comment belongs to its previous token.
+                    std::get<Terminal>(*prevNoncommentSymIter).token.comments.push_back(token);
+                }
+            }
         }
     }
     symVec.push_back(pluma::Terminal{pluma::Token{"EOF", pluma::TokenType::TK_EOF}});
