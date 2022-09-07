@@ -16,6 +16,15 @@ Token::Token(const Token &other) {
 Token::Token(Token &&other)
     : value(std::move(other.value)), tokenType(other.tokenType), line(other.line) {}
 
+Token &Token::operator=(const Token &other) {
+    if (this == &other) {
+        return *this;
+    }
+    this->value = other.value;
+    this->tokenType = other.tokenType;
+    return *this;
+}
+
 std::ostream &operator<<(std::ostream &os, const Sym &sym) {
     if (std::holds_alternative<Nonterminal>(sym)) {
         os << std::get<Nonterminal>(sym);
@@ -24,9 +33,7 @@ std::ostream &operator<<(std::ostream &os, const Sym &sym) {
     }
     return os;
 }
-Rule operator>>(Nonterminal sym, const SymList &symlist) {
-    return std::make_pair(sym, symlist);
-}
+Rule operator>>(Nonterminal sym, const SymList &symlist) { return std::make_pair(sym, symlist); }
 std::ostream &operator<<(std::ostream &os, const Rule &rule) {
     os << rule.first << " -> ";
     for (size_t i = 0; i < rule.second.size(); ++i) {

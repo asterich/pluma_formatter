@@ -219,14 +219,7 @@ struct Token {
     ~Token() = default;
 
     // copy operator required by std::variant
-    Token &operator=(const Token &other) {
-        if (this == &other) {
-            return *this;
-        }
-        this->value = other.value;
-        this->tokenType = other.tokenType;
-        return *this;
-    }
+    Token &operator=(const Token &other);
 };
 
 // 终结符 / 非终结符
@@ -237,9 +230,6 @@ struct Terminal {
 
     // Only for std::map and std::set.
     bool operator<(const Terminal &rhs) const {
-        // if (this->token.tokenType == rhs.token.tokenType) {
-        //     return this->token.value < rhs.token.value;
-        // }
         return this->token.tokenType < rhs.token.tokenType;
     }
 
