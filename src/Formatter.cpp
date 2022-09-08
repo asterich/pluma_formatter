@@ -33,10 +33,12 @@ void Formatter::formatNode(const AstNode *nodePtr, const size_t indents) {
     if (std::holds_alternative<Terminal>(nodePtr->sym)) {
         // Terminal
         this->out << nodePtr->sym;
-        if (std::get<Terminal>(nodePtr->sym).token.comments.size() != 0) {
+        auto &currToken = std::get<Terminal>(nodePtr->sym).token;
+        if (currToken.comments.size() != 0) {
+            size_t neededIndents = currToken.tokenType == TokenType::LBRACE ? indents + 1 : indents;
             for (auto comment : std::get<Terminal>(nodePtr->sym).token.comments) {
                 this->out << '\n';
-                printIndents(indents + 1);
+                printIndents(neededIndents);
                 this->out << comment;
             }
         }

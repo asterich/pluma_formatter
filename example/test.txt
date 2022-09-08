@@ -19,7 +19,7 @@ int yaju=114514;int main(){ // this is a line comment
    case 999:
                                 if(0) return;
 case 168:{break;}
-        }}
+        }} // here needs to return
     return 0;
 }
 
