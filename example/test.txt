@@ -8,7 +8,11 @@ struct StackInterface {
 
 void karl_richter(int bach_s_organ) {return BWV_565
 (toccata);
-kill_U&&!shabby; I_m+drunk.I_need_some_help;fuck_you-!hahaha;if(i=died) {tiwoshoushi;} else{"fuck me!";}}
+kill_U&&!shabby; I_m+drunk.I_need_some_help;fuck_you-!hahaha;if(i=died) {tiwoshoushi;//替我收尸
+/*
+    If I shivered please give me a blanket;
+    Keep me warm let me wear your coat.
+*/} else{"rape me!";}}
 int yaju=114514;int main(){ // this is a line comment
 // this is another line comment
     for (int i = 1; i < 55; ++i) {return 0;}

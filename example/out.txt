@@ -14,8 +14,13 @@ void karl_richter(int bach_s_organ) {
     fuck_you - !hahaha;
     if (i = died) {
         tiwoshoushi;
+        //替我收尸
+        /*
+    If I shivered please give me a blanket;
+    Keep me warm let me wear your coat.
+*/
     } else {
-        "fuck me!";
+        "rape me!";
     }
 }
 
