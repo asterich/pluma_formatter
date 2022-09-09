@@ -57,6 +57,7 @@ struct Grammar {
     std::set<Terminal> P_TERMINAL_SET;
     std::set<Nonterminal> P_NONTERMINAL_SET;
 
+    // Used for cache.
     std::vector<Sym> symVec;
     std::map<Sym, size_t> symIndexMap;
 
