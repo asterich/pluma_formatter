@@ -3,7 +3,7 @@
 #include "Ast.hpp"
 #include "Formatter.h"
 #include "Lexer.h"
-#include "Parser.h"
+#include "c/CParser.h"
 // #include "main.h"
 
 void panic(const char *info) {
@@ -37,10 +37,10 @@ int main(int argc, char *argv[]) {
     pluma::Lexer lexer(inputFilename);
     std::vector<pluma::Sym> symVec = lexer.tokenize();
 
-    pluma::Parser parser;
-    parser.grammarPtr->displayAllRule();
-    parser.grammarPtr->checkLR1();
-    pluma::Ast ast = parser.grammarPtr->gen(symVec);
+    std::unique_ptr<pluma::Parser> cParserPtr = std::make_unique<pluma::CParser>(pluma::CParser());
+    cParserPtr->grammarPtr->displayAllRule();
+    cParserPtr->grammarPtr->checkLR1();
+    pluma::Ast ast = cParserPtr->grammarPtr->gen(symVec);
     ast.display();
 
     pluma::Formatter formatter(outputFilename);
