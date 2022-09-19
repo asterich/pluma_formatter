@@ -134,10 +134,13 @@ struct Grammar {
     Grammar() = delete;
 
    public:
-    Grammar(const std::vector<Rule> &pRule);
+    Grammar(const std::string &grammarFile, const std::string &hashFile,
+            const std::vector<Rule> &pRule);
 
    private:
     void genLR1Table(const std::vector<Rule> &pRule);
+
+   private:
     void writeLR1TableToFile(std::string filename);
     bool readLR1TableFromFile(std::string filename);
 

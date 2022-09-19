@@ -117,7 +117,8 @@ Action Grammar::LR1_Table_Read(const size_t &state, const Sym &sym) {
     return *(actionSet.begin());
 }
 
-Grammar::Grammar(const std::vector<Rule> &pRule) {
+Grammar::Grammar(const std::string &grammarFile, const std::string &hashFile,
+                 const std::vector<Rule> &pRule) {
     // 构造所有产生式
     ORIGIN_PRODUCE_RULES = pRule;
     if (pRule.size()) {
@@ -153,8 +154,6 @@ Grammar::Grammar(const std::vector<Rule> &pRule) {
     }
 
 #ifdef HAS_OPENSSL
-    const std::string grammarFile = "../../src/c/CParser.cpp";
-    const std::string hashFile = "../../data/hash.txt";
 
     std::string hash = utils::fileHash(grammarFile);
     std::string hashFromFile;
