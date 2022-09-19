@@ -17,7 +17,7 @@ if(OPENSSL_FOUND)
     add_compile_definitions(HAS_OPENSSL)
 endif()
 
-add_executable(main main.cpp Lexer.cpp Symbol.cpp Parser.cpp Formatter.cpp Grammar.cpp)
+add_executable(main main.cpp Lexer.cpp Symbol.cpp Parser.cpp Formatter.cpp Grammar.cpp c/CParser.cpp)
 
 target_include_directories(main PUBLIC ../include)
 

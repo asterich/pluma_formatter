@@ -153,7 +153,7 @@ Grammar::Grammar(const std::vector<Rule> &pRule) {
     }
 
 #ifdef HAS_OPENSSL
-    const std::string grammarFile = "../../src/Parser.cpp";
+    const std::string grammarFile = "../../src/c/CParser.cpp";
     const std::string hashFile = "../../data/hash.txt";
 
     std::string hash = utils::fileHash(grammarFile);
