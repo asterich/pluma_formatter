@@ -14,6 +14,7 @@
 
 #include "Ast.hpp"
 #include "Logger.h"
+#include "main.h"
 #include "utils/Hash.h"
 
 namespace pluma {

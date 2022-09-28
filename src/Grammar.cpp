@@ -586,9 +586,9 @@ Ast Grammar::gen(std::vector<Sym> str) {
             }
         } else {
         error:
-            logger << "ERROR: state " << state << ", symbol " << currSym
-                   << " have an error action.\n";
-            logger << "At line " << std::get<Terminal>(currSym).token.line << ":";
+            std::cerr << "\nERROR: state " << state << ", symbol " << currSym
+                      << " have an error action.\n";
+            std::cerr << "At line " << std::get<Terminal>(currSym).token.line << ":";
             std::vector<Terminal> shouldBe;
             if (LR1_Table.find(state) != LR1_Table.end()) {
                 for (auto &actionList : LR1_Table.at(state)) {
@@ -601,10 +601,11 @@ Ast Grammar::gen(std::vector<Sym> str) {
             }
             if (shouldBe.size()) {
                 for (auto &expectedTerminal : shouldBe) {
-                    logger << expectedTerminal << " expected.\n";
+                    std::cerr << expectedTerminal << " expected.\n";
                     break;
                 }
             }
+            std::cerr << std::endl;
             // TODO: error recovery
             goto err_failed_to_recover;
         }
