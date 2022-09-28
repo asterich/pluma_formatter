@@ -17,7 +17,7 @@ CParser &CParser::operator=(CParser &&rhs) {
 
 void CParser::genGrammar() {
     grammarPtr = std::make_unique<Grammar>(
-        "../../src/c/CParser.cpp", "../../data/hash.txt",
+        "../../src/c/CParser.cpp", "../../data/hash_c.txt",
         std::vector<Rule>{
 
             Nonterminal{"program-aug"} >> SymList{Nonterminal{"program"}},
