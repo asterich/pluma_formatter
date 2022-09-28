@@ -1,0 +1,27 @@
+#include <stdio.h>
+
+struct __generic_programming114514XJ{int i:4;char ch;};
+int gcd(int x, int y);
+int main() {
+    char*n;
+if
+(n == NULL) {double d[554];} else if (kkk) {goto end;} else
+{
+    switch(&n) {
+        case 1:
+        case 2:
+        case 3: break;
+        case 5:{// this is a comment
+
+/*this is another comment*/printf("%d", 5 + gcd(x,y-- |1)||&n);}
+    }
+}
+    while (1) {
+for (int i = 0x19f; i < .336; ++i) {
+            do {int j =0; (++j)-1;for(j = 0;;) {continue;}} while(0);
+        }
+    }
+    end:
+    return 0;
+    // 一个中文注释
+}
